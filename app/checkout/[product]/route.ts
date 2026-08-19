@@ -5,6 +5,9 @@ type CheckoutBindings = {
   NEXT_PUBLIC_STRIPE_BEP_PROFESSIONAL_URL?: string;
   NEXT_PUBLIC_STRIPE_BEP_ASSISTED_URL?: string;
   NEXT_PUBLIC_STRIPE_APPENDIX_URL?: string;
+  NEXT_PUBLIC_STRIPE_APPENDIX_STANDARD_URL?: string;
+  NEXT_PUBLIC_STRIPE_APPENDIX_PROFESSIONAL_URL?: string;
+  NEXT_PUBLIC_STRIPE_APPENDIX_ULTIMATE_URL?: string;
 };
 
 const bindingNames: Record<string, keyof CheckoutBindings> = {
@@ -12,6 +15,9 @@ const bindingNames: Record<string, keyof CheckoutBindings> = {
   "bep-professional": "NEXT_PUBLIC_STRIPE_BEP_PROFESSIONAL_URL",
   "bep-assisted": "NEXT_PUBLIC_STRIPE_BEP_ASSISTED_URL",
   appendix: "NEXT_PUBLIC_STRIPE_APPENDIX_URL",
+  "appendix-standard": "NEXT_PUBLIC_STRIPE_APPENDIX_STANDARD_URL",
+  "appendix-professional": "NEXT_PUBLIC_STRIPE_APPENDIX_PROFESSIONAL_URL",
+  "appendix-ultimate": "NEXT_PUBLIC_STRIPE_APPENDIX_ULTIMATE_URL",
 };
 
 export async function GET(_request: Request, context: { params: Promise<{ product: string }> }) {

@@ -5,6 +5,9 @@ const PRODUCT_FILES: Record<string, string> = {
   "bep-professional": "bep/BEP-Template-Discipline-Based-Final.docx",
   "bep-assisted": "bep/BEP-Template-Discipline-Based-Final.docx",
   "appendix-package": "appendix/ISO-19650-BIM-Appendix-Package.zip",
+  "appendix-standard": "appendix/ISO-19650-BIM-Appendix-Package.zip",
+  "appendix-professional": "appendix/ISO-19650-BIM-Appendix-Package.zip",
+  "appendix-ultimate": "appendix/ISO-19650-BIM-Appendix-Package.zip",
 };
 
 const PRODUCT_NAMES: Record<string, string> = {
@@ -12,6 +15,9 @@ const PRODUCT_NAMES: Record<string, string> = {
   "bep-professional": "Professional BEP Package",
   "bep-assisted": "Assisted BEP Package",
   "appendix-package": "BIM Appendix Package",
+  "appendix-standard": "Standard BIM Appendix Package",
+  "appendix-professional": "Professional BIM Appendix Package",
+  "appendix-ultimate": "Ultimate BIM Appendix Package",
 };
 
 function toHex(bytes: ArrayBuffer) {

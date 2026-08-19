@@ -1,6 +1,8 @@
 const products = [
-  { name: "ISO 19650 BIM Execution Plan Template", detail: "Architecture, Structure & MEP", price: "$32", link: process.env.NEXT_PUBLIC_STRIPE_BEP_URL },
-  { name: "ISO 19650 BIM Appendix Package", detail: "Six practical project-delivery templates", price: "Price to confirm", link: process.env.NEXT_PUBLIC_STRIPE_APPENDIX_URL },
+  { name: "ISO 19650 BIM Execution Plan Template", detail: "Architecture, Structure & MEP", price: "$32", href: "/checkout/bep-standard" },
+  { name: "Appendix Package — Standard", detail: "Editable ISO 19650 BIM appendix templates", price: "$19", href: "/checkout/appendix-standard" },
+  { name: "Appendix Package — Professional", detail: "Professional BIM appendix package for project delivery", price: "$39", href: "/checkout/appendix-professional" },
+  { name: "Appendix Package — Ultimate", detail: "Advanced BIM documentation and coordination package", price: "$69", href: "/checkout/appendix-ultimate" },
 ];
 
 export default function Home() {
@@ -28,7 +30,7 @@ export default function Home() {
           {products.map((product) => (
             <article className="productCard" key={product.name}>
               <p className="productMeta">DIGITAL RESOURCE</p><h3>{product.name}</h3><p>{product.detail}</p>
-              <div className="productBottom"><strong>{product.price}</strong>{product.link ? <a className="checkoutButton ready" href={product.link}>Buy securely</a> : <span className="checkoutButton">Stripe setup required</span>}</div>
+              <div className="productBottom"><strong>{product.price}</strong><a className="checkoutButton ready" href={product.href}>Buy securely</a></div>
             </article>
           ))}
         </div>
