@@ -51,7 +51,7 @@ export default function DeliveryStatus({ sessionId }: { sessionId: string }) {
     return (
       <div className="deliveryReady" role="status">
         <p>Your protected download is ready. This link expires after seven days and supports up to five downloads.</p>
-        <a className="primaryButton" href={delivery.downloadUrl}>Download Product 01</a>
+        <a className="primaryButton" href={delivery.downloadUrl}>Download your purchase</a>
       </div>
     );
   }

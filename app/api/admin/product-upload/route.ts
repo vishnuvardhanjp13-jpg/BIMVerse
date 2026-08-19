@@ -5,8 +5,16 @@ const UPLOAD_TARGETS: Record<string, { objectKey: string; contentType: string }>
     objectKey: "bep/BEP-Template-Discipline-Based-Final.docx",
     contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   },
-  "product-02": {
-    objectKey: "appendix/ISO-19650-BIM-Appendix-Package.zip",
+  "product-02-standard": {
+    objectKey: "appendix/BIMVERSE-Appendix-Standard.zip",
+    contentType: "application/zip",
+  },
+  "product-02-professional": {
+    objectKey: "appendix/BIMVERSE-Appendix-Professional.zip",
+    contentType: "application/zip",
+  },
+  "product-02-ultimate": {
+    objectKey: "appendix/BIMVERSE-Appendix-Ultimate.zip",
     contentType: "application/zip",
   },
 };

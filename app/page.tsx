@@ -5,9 +5,9 @@ const productGroups = [
     { name: "Assisted", price: "$199", href: "/checkout/bep-assisted", features: ["Everything in Professional", "Professional BEP review", "Consultation and project feedback"] },
   ]},
   { number: "02", title: "BIM Execution Plan Appendix Package", intro: "Editable project-delivery tools for model planning, quality control, information need and coordination.", tiers: [
-    { name: "Standard", price: "$45", href: "/checkout/appendix-standard", features: ["Six editable Excel templates", "Individual professional-use license", "MBS, QA/QC, LOIN, MIDP, clash matrix and TIDP"] },
-    { name: "Professional", price: "$79", href: "/checkout/appendix-professional", featured: true, features: ["Everything in Standard", "Project/team-use license", "Future minor template updates"] },
-    { name: "Ultimate", price: "$129", href: "/checkout/appendix-ultimate", features: ["Everything in Professional", "One structured implementation review", "Project-specific appendix guidance"] },
+    { name: "Standard", price: "$45", href: "/checkout/appendix-standard", features: ["Model Breakdown Structure", "QA/QC Checklist", "LOIN Matrix"] },
+    { name: "Professional", price: "$79", href: "/checkout/appendix-professional", featured: true, features: ["Everything in Standard", "MIDP, clash matrix and TIDP", "All six editable Excel templates"] },
+    { name: "Ultimate", price: "$129", href: "/checkout/appendix-ultimate", features: ["Everything in Professional", "Structured implementation review", "Project-specific appendix guidance"] },
   ]},
 ];
 

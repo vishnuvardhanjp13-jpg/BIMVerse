@@ -1399,6 +1399,60 @@ body.cursor-hover .cursor-ring{
   padding:29px;
 }
 
+.appendix-preview-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+  margin-top:55px;
+}
+
+.appendix-preview-card{
+  margin:0;
+  background:#fff;
+  border:1px solid var(--line);
+  overflow:hidden;
+  transition:.55s var(--ease);
+}
+
+.appendix-preview-card:hover{
+  transform:translateY(-8px);
+  box-shadow:0 25px 60px rgba(20,40,61,.12);
+}
+
+.appendix-preview-frame{
+  position:relative;
+  height:245px;
+  overflow:hidden;
+  background:#f5f7f9;
+}
+
+.appendix-preview-frame img{
+  display:block;
+  width:100%;
+  height:auto;
+  min-height:100%;
+  object-fit:cover;
+  object-position:left top;
+}
+
+.appendix-preview-frame::after{
+  content:"";
+  position:absolute;
+  inset:auto 0 0;
+  height:40%;
+  background:linear-gradient(transparent,rgba(245,247,249,.96));
+  pointer-events:none;
+}
+
+.appendix-preview-card figcaption{
+  min-height:76px;
+  padding:18px 20px;
+  font-size:12px;
+  font-weight:900;
+  line-height:1.35;
+  letter-spacing:-.01em;
+}
+
 .reco{
   position:absolute;
   top:0;
@@ -2156,6 +2210,10 @@ footer{
     grid-template-columns:1fr;
   }
 
+  .appendix-preview-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
   .product-visual{
     min-height:400px;
   }
@@ -2166,6 +2224,10 @@ footer{
 }
 
 @media(max-width:760px){
+
+  .appendix-preview-grid{
+    grid-template-columns:1fr;
+  }
 
   html, body{
     width:100%;
@@ -2977,10 +3039,8 @@ footer{
 
         <a
           class="btn primary"
-          href="/checkout/appendix"
-          target="_blank"
-          rel="noopener">
-          Get Appendix Package →
+          href="#appendix-versions">
+          View Appendix versions →
         </a>
 
       </div>
@@ -3069,7 +3129,7 @@ footer{
         </div>
 
         <div class="price">
-          $32
+          $59
           <small>USD / one-time</small>
         </div>
 
@@ -3134,7 +3194,7 @@ footer{
         </div>
 
         <div class="price">
-          $47
+          $99
           <small>USD / one-time</small>
         </div>
 
@@ -3195,7 +3255,7 @@ footer{
         </div>
 
         <div class="price">
-          $62
+          $199
           <small>USD / one-time</small>
         </div>
 
@@ -3245,6 +3305,99 @@ footer{
 
 
 <!-- ======================================================
+     APPENDIX TIERS
+====================================================== -->
+
+<section class="section" id="appendix-versions">
+
+  <div class="wrap">
+
+    <div class="reveal">
+      <div class="eyebrow">06 / Appendix versions</div>
+      <h2 class="big">Choose the<br>appendix support<br>your project needs.</h2>
+      <p class="intro muted">
+        Start with the three essential planning tools, unlock all six
+        editable Excel templates, or add implementation review and guidance.
+      </p>
+    </div>
+
+    <div class="versions">
+
+      <article class="version reveal">
+        <div class="v-num">Tier 3 / Standard</div>
+        <h3>Essential<br>Appendix Set</h3>
+        <div class="desc">Three editable Excel resources for model structure, quality control and information-need planning.</div>
+        <div class="price">$45<small>USD / one-time</small></div>
+        <div class="features">
+          <div class="feature">Model Breakdown Structure</div>
+          <div class="feature">QA/QC Checklist</div>
+          <div class="feature">LOIN Matrix</div>
+          <div class="feature">Editable Excel templates</div>
+          <div class="feature">Immediate secure delivery</div>
+        </div>
+        <a class="btn primary" href="/checkout/appendix-standard" target="_blank" rel="noopener">Get Standard →</a>
+      </article>
+
+      <article class="version featured reveal">
+        <div class="reco">Recommended</div>
+        <div class="v-num">Tier 2 / Professional</div>
+        <h3>Complete<br>Appendix Package</h3>
+        <div class="desc">The full six-template Excel package for coordinated project information planning and BIM delivery.</div>
+        <div class="price">$79<small>USD / one-time</small></div>
+        <div class="features">
+          <div class="feature">Everything in Standard</div>
+          <div class="feature">MIDP Template</div>
+          <div class="feature">Clash Detection Matrix</div>
+          <div class="feature">TIDP Template</div>
+          <div class="feature">All six editable Excel templates</div>
+        </div>
+        <a class="btn primary" href="/checkout/appendix-professional" target="_blank" rel="noopener">Get Professional →</a>
+      </article>
+
+      <article class="version reveal">
+        <div class="v-num">Tier 1 / Ultimate</div>
+        <h3>Complete Package<br>+ Guided Review</h3>
+        <div class="desc">All six templates plus structured consultation and project-specific implementation guidance.</div>
+        <div class="price">$129<small>USD / one-time</small></div>
+        <div class="features">
+          <div class="feature">Everything in Professional</div>
+          <div class="feature">Structured implementation review</div>
+          <div class="feature">Project-specific appendix guidance</div>
+          <div class="feature">Consultation support</div>
+          <div class="feature">Secure package delivery</div>
+        </div>
+        <a class="btn primary" href="/checkout/appendix-ultimate" target="_blank" rel="noopener">Get Ultimate →</a>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================================================
+     APPENDIX PREVIEW
+====================================================== -->
+
+<section class="section" id="appendix-preview">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="eyebrow">07 / Actual Appendix preview</div>
+      <h2 class="big">See the working<br>Excel templates<br>before you buy.</h2>
+      <p class="intro muted">These previews are rendered from the six editable files included in the Professional and Ultimate packages.</p>
+    </div>
+    <div class="appendix-preview-grid">
+      <figure class="appendix-preview-card reveal"><div class="appendix-preview-frame"><img src="/appendix-previews/model-breakdown.png" alt="Model Breakdown Structure Excel template preview" loading="lazy"></div><figcaption>Model Breakdown Structure (MBS)</figcaption></figure>
+      <figure class="appendix-preview-card reveal"><div class="appendix-preview-frame"><img src="/appendix-previews/qaqc-checklist.png" alt="QA QC Checklist Excel template preview" loading="lazy"></div><figcaption>Model QA/QC Checklist</figcaption></figure>
+      <figure class="appendix-preview-card reveal"><div class="appendix-preview-frame"><img src="/appendix-previews/loin-matrix.png" alt="LOIN Matrix Excel template preview" loading="lazy"></div><figcaption>Level of Information Need (LOIN) Matrix</figcaption></figure>
+      <figure class="appendix-preview-card reveal"><div class="appendix-preview-frame"><img src="/appendix-previews/midp.png" alt="MIDP Excel template preview" loading="lazy"></div><figcaption>Master Information Delivery Plan (MIDP)</figcaption></figure>
+      <figure class="appendix-preview-card reveal"><div class="appendix-preview-frame"><img src="/appendix-previews/clash-matrix.png" alt="Clash Detection Matrix Excel template preview" loading="lazy"></div><figcaption>Master Clash Detection Matrix</figcaption></figure>
+      <figure class="appendix-preview-card reveal"><div class="appendix-preview-frame"><img src="/appendix-previews/tidp.png" alt="TIDP Excel template preview" loading="lazy"></div><figcaption>Task Information Delivery Plan (TIDP)</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+
+<!-- ======================================================
      CDE PREVIEW
 ====================================================== -->
 
@@ -3260,7 +3413,7 @@ footer{
     <div class="bep-preview-head reveal">
 
       <div class="eyebrow">
-        06 / Actual BEP preview
+        08 / Actual BEP preview
       </div>
 
       <h2 class="big">
@@ -3420,7 +3573,7 @@ footer{
     <div class="reveal">
 
       <div class="eyebrow">
-        07 / Information delivery
+        09 / Information delivery
       </div>
 
       <h2 class="big">
@@ -3478,7 +3631,7 @@ footer{
     <div class="reveal">
 
       <div class="eyebrow">
-        08 / Built for BIM delivery
+        10 / Built for BIM delivery
       </div>
 
       <h2 class="big">
@@ -3512,7 +3665,7 @@ footer{
     <div class="reveal">
 
       <div class="eyebrow">
-        09 / Product information
+        11 / Product information
       </div>
 
       <h2 class="big">
@@ -3611,7 +3764,7 @@ footer{
   <div class="wrap reveal">
 
     <div class="kicker">
-      10 / Start your next BEP
+      12 / Start your next BEP
     </div>
 
     <h2>
