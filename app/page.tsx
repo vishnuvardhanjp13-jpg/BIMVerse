@@ -1,8 +1,23 @@
-const products = [
-  { name: "ISO 19650 BIM Execution Plan Template", detail: "Architecture, Structure & MEP", price: "$32", href: "/checkout/bep-standard" },
-  { name: "Appendix Package — Standard", detail: "Editable ISO 19650 BIM appendix templates", price: "$19", href: "/checkout/appendix-standard" },
-  { name: "Appendix Package — Professional", detail: "Professional BIM appendix package for project delivery", price: "$39", href: "/checkout/appendix-professional" },
-  { name: "Appendix Package — Ultimate", detail: "Advanced BIM documentation and coordination package", price: "$69", href: "/checkout/appendix-ultimate" },
+const productGroups = [
+  { number: "01", title: "ISO 19650 BIM Execution Plan", intro: "A discipline-structured BEP system for Architecture, Structure and MEP delivery.", tiers: [
+    { name: "Standard", price: "$59", href: "/checkout/bep-standard", features: ["Editable BEP Word template", "Architecture, Structure & MEP structure", "ISO 19650-aligned framework"] },
+    { name: "Professional", price: "$99", href: "/checkout/bep-professional", featured: true, features: ["Everything in Standard", "Completed reference example", "Faster project customization"] },
+    { name: "Assisted", price: "$199", href: "/checkout/bep-assisted", features: ["Everything in Professional", "Professional BEP review", "Consultation and project feedback"] },
+  ]},
+  { number: "02", title: "BIM Execution Plan Appendix Package", intro: "Editable project-delivery tools for model planning, quality control, information need and coordination.", tiers: [
+    { name: "Standard", price: "$45", href: "/checkout/appendix-standard", features: ["Six editable Excel templates", "Individual professional-use license", "MBS, QA/QC, LOIN, MIDP, clash matrix and TIDP"] },
+    { name: "Professional", price: "$79", href: "/checkout/appendix-professional", featured: true, features: ["Everything in Standard", "Project/team-use license", "Future minor template updates"] },
+    { name: "Ultimate", price: "$129", href: "/checkout/appendix-ultimate", features: ["Everything in Professional", "One structured implementation review", "Project-specific appendix guidance"] },
+  ]},
+];
+
+const previews = [
+  { name: "Model Breakdown Structure", image: "/appendix-previews/model-breakdown.png" },
+  { name: "Model QA/QC Checklist", image: "/appendix-previews/qaqc-checklist.png" },
+  { name: "Level of Information Need Matrix", image: "/appendix-previews/loin-matrix.png" },
+  { name: "Master Information Delivery Plan", image: "/appendix-previews/midp.png" },
+  { name: "Master Clash Detection Matrix", image: "/appendix-previews/clash-matrix.png" },
+  { name: "Task Information Delivery Plan", image: "/appendix-previews/tidp.png" },
 ];
 
 export default function Home() {
@@ -10,7 +25,7 @@ export default function Home() {
     <main>
       <nav className="nav shell" aria-label="Primary navigation">
         <a className="brand" href="#top" aria-label="BIMVERSE home"><span className="brandMark">BV</span><span>BIMVERSE</span></a>
-        <div className="navLinks"><a href="#products">Products</a><a href="#delivery">Delivery</a></div>
+        <div className="navLinks"><a href="#products">Products</a><a href="#appendix-preview">Preview</a><a href="#delivery">Delivery</a></div>
       </nav>
       <section className="hero shell" id="top">
         <div className="heroCopy">
@@ -25,19 +40,31 @@ export default function Home() {
         </div>
       </section>
       <section className="products shell" id="products">
-        <div className="sectionHeading"><p className="eyebrow">Product system</p><h2>Choose a structured starting point.</h2></div>
-        <div className="productGrid">
-          {products.map((product) => (
-            <article className="productCard" key={product.name}>
-              <p className="productMeta">DIGITAL RESOURCE</p><h3>{product.name}</h3><p>{product.detail}</p>
-              <div className="productBottom"><strong>{product.price}</strong><a className="checkoutButton ready" href={product.href}>Buy securely</a></div>
-            </article>
-          ))}
-        </div>
+        <div className="sectionHeading"><p className="eyebrow">Product system</p><h2>Choose the support level your project needs.</h2></div>
+        {productGroups.map((group) => (
+          <div className="productGroup" key={group.number}>
+            <div className="groupHeading"><span>{group.number}</span><div><h3>{group.title}</h3><p>{group.intro}</p></div></div>
+            <div className="tierGrid">{group.tiers.map((tier) => (
+              <article className={`tierCard${tier.featured ? " featured" : ""}`} key={tier.name}>
+                {tier.featured && <p className="recommended">Recommended</p>}
+                <p className="productMeta">{tier.name}</p><p className="tierPrice">{tier.price}<small> one-time</small></p>
+                <ul>{tier.features.map((feature) => <li key={feature}>{feature}</li>)}</ul>
+                <a className="checkoutButton ready" href={tier.href}>Buy securely</a>
+              </article>
+            ))}</div>
+          </div>
+        ))}
       </section>
+      <section className="previewSection" id="appendix-preview"><div className="shell">
+        <div className="sectionHeading"><p className="eyebrow">Product 02 preview</p><h2>See the working templates before you buy.</h2></div>
+        <p className="previewIntro">Real previews rendered from the editable Excel package. Project fields remain as placeholders for your team to customize.</p>
+        <div className="previewGrid">{previews.map((preview) => (
+          <figure className="previewCard" key={preview.name}><div className="previewFrame"><img src={preview.image} alt={`${preview.name} spreadsheet preview`} loading="lazy" /></div><figcaption>{preview.name}</figcaption></figure>
+        ))}</div>
+      </div></section>
       <section className="delivery shell" id="delivery">
-        <p className="eyebrow">Secure delivery</p><h2>Checkout through Stripe. Receive protected files automatically.</h2>
-        <div className="deliverySteps"><span>01 Select product</span><span>02 Pay securely</span><span>03 Receive expiring download link</span></div>
+        <p className="eyebrow">Secure delivery</p><h2>One payment. Immediate access. No monthly subscription.</h2>
+        <div className="deliverySteps"><span>01 Select product and tier</span><span>02 Pay securely through Stripe</span><span>03 Receive protected download access</span></div>
       </section>
     </main>
   );
