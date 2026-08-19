@@ -8,6 +8,7 @@ export type DeliveryOrder = {
 type DeliveryBindings = {
   DB: D1Database; FILES: R2Bucket; STRIPE_WEBHOOK_SECRET?: string;
   RESEND_API_KEY?: string; DELIVERY_FROM_EMAIL?: string;
+  PRODUCT_UPLOAD_SECRET?: string;
 };
 
 export function getDeliveryBindings() { return env as unknown as DeliveryBindings; }

@@ -37,7 +37,7 @@ async function verifyStripeSignature(body: string, header: string, secret: strin
 
 async function sendDeliveryEmail(email: string, downloadUrl: string, productKey: string) {
   const { RESEND_API_KEY, DELIVERY_FROM_EMAIL } = getDeliveryBindings();
-  if (!RESEND_API_KEY || !DELIVERY_FROM_EMAIL) throw new Error("Delivery email is not configured");
+  if (!RESEND_API_KEY || !DELIVERY_FROM_EMAIL) return false;
   const productName = PRODUCT_NAMES[productKey] ?? "BIMVERSE product";
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -46,6 +46,7 @@ async function sendDeliveryEmail(email: string, downloadUrl: string, productKey:
       html: `<p>Thank you for purchasing from BIMVERSE.</p><p><a href="${downloadUrl}">Download your ${productName}</a></p><p>This protected link expires in seven days.</p>` }),
   });
   if (!response.ok) throw new Error(`Delivery email failed with status ${response.status}`);
+  return true;
 }
 
 export async function POST(request: Request) {
@@ -81,6 +82,6 @@ export async function POST(request: Request) {
       expires_at: now + 604800, download_count: 0, created_at: now };
     await createDeliveryOrder(order);
   }
-  await sendDeliveryEmail(email, new URL(`/download/${order.download_token}`, request.url).toString(), productKey);
-  return Response.json({ received: true });
+  const emailSent = await sendDeliveryEmail(email, new URL(`/download/${order.download_token}`, request.url).toString(), productKey);
+  return Response.json({ received: true, email_sent: emailSent });
 }
