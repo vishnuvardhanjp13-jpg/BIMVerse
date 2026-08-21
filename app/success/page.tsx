@@ -1,3 +1,4 @@
+import Link from "next/link";
 import DeliveryStatus from "./DeliveryStatus";
 
 export default async function SuccessPage({
@@ -13,7 +14,7 @@ export default async function SuccessPage({
         <p className="eyebrow">Payment received</p>
         <h1>Your BIMVERSE product is being prepared.</h1>
         <DeliveryStatus sessionId={sessionId} />
-        <a className="secondaryButton" href="/">Return to BIMVERSE</a>
+        <Link className="secondaryButton" href="/">Return to BIMVERSE</Link>
       </div>
     </main>
   );

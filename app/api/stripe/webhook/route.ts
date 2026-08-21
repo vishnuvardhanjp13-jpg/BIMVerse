@@ -53,6 +53,30 @@ async function sendDeliveryEmail(email: string, downloadUrl: string, productKey:
   return true;
 }
 
+async function syncMembership(object: Record<string, unknown>, eventType: string) {
+  const { DB } = getDeliveryBindings();
+  if (eventType === "checkout.session.completed" && object.mode === "subscription") {
+    const details = (object.customer_details ?? {}) as Record<string, unknown>;
+    const email = typeof details.email === "string" ? details.email : "";
+    const subscriptionId = typeof object.subscription === "string" ? object.subscription : "";
+    const customerId = typeof object.customer === "string" ? object.customer : "";
+    if (!email || !subscriptionId) return;
+    const now = Math.floor(Date.now() / 1000);
+    await DB.prepare(`INSERT INTO memberships (id,email,stripe_customer_id,stripe_subscription_id,status,created_at,updated_at)
+      VALUES (?,?,?,?,?,?,?) ON CONFLICT(stripe_subscription_id) DO UPDATE SET email=excluded.email,stripe_customer_id=excluded.stripe_customer_id,status=excluded.status,updated_at=excluded.updated_at`)
+      .bind(crypto.randomUUID(), email, customerId, subscriptionId, "active", now, now).run();
+    return;
+  }
+  if (eventType.startsWith("customer.subscription.")) {
+    const subscriptionId = typeof object.id === "string" ? object.id : "";
+    if (!subscriptionId) return;
+    const status = typeof object.status === "string" ? object.status : "incomplete";
+    const periodEnd = typeof object.current_period_end === "number" ? object.current_period_end : null;
+    await DB.prepare("UPDATE memberships SET status=?, current_period_end=?, updated_at=? WHERE stripe_subscription_id=?")
+      .bind(status, periodEnd, Math.floor(Date.now() / 1000), subscriptionId).run();
+  }
+}
+
 export async function POST(request: Request) {
   const body = await request.text();
   const signature = request.headers.get("stripe-signature") ?? "";
@@ -60,6 +84,15 @@ export async function POST(request: Request) {
   if (!STRIPE_WEBHOOK_SECRET) return Response.json({ error: "Webhook is not configured" }, { status: 503 });
   if (!(await verifyStripeSignature(body, signature, STRIPE_WEBHOOK_SECRET))) return Response.json({ error: "Invalid signature" }, { status: 400 });
   const event = JSON.parse(body) as { type?: string; data?: { object?: Record<string, unknown> } };
+  const eventObject = event.data?.object ?? {};
+  if (event.type === "checkout.session.completed" && eventObject.mode === "subscription") {
+    await syncMembership(eventObject, event.type);
+    return Response.json({ received: true, membership_synced: true });
+  }
+  if (event.type?.startsWith("customer.subscription.")) {
+    await syncMembership(eventObject, event.type);
+    return Response.json({ received: true, membership_synced: true });
+  }
   const supportedEvents = new Set([
     "checkout.session.completed",
     "checkout.session.async_payment_succeeded",
@@ -68,7 +101,7 @@ export async function POST(request: Request) {
     return Response.json({ received: true, payment_failed: true });
   }
   if (!event.type || !supportedEvents.has(event.type)) return Response.json({ received: true });
-  const session = event.data?.object ?? {};
+  const session = eventObject;
   const paymentStatus = typeof session.payment_status === "string" ? session.payment_status : "";
   if (paymentStatus === "unpaid") return Response.json({ received: true, awaiting_payment: true });
   const sessionId = typeof session.id === "string" ? session.id : "";

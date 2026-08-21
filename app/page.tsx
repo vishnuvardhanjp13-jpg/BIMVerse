@@ -1,71 +1,51 @@
-const productGroups = [
-  { number: "01", title: "ISO 19650 BIM Execution Plan", intro: "A discipline-structured BEP system for Architecture, Structure and MEP delivery.", tiers: [
-    { name: "Standard", price: "$59", href: "/checkout/bep-standard", features: ["Editable BEP Word template", "Architecture, Structure & MEP structure", "ISO 19650-aligned framework"] },
-    { name: "Professional", price: "$99", href: "/checkout/bep-professional", featured: true, features: ["Everything in Standard", "Completed reference example", "Faster project customization"] },
-    { name: "Assisted", price: "$199", href: "/checkout/bep-assisted", features: ["Everything in Professional", "Professional BEP review", "Consultation and project feedback"] },
-  ]},
-  { number: "02", title: "BIM Execution Plan Appendix Package", intro: "Editable project-delivery tools for model planning, quality control, information need and coordination.", tiers: [
-    { name: "Standard", price: "$45", href: "/checkout/appendix-standard", features: ["Model Breakdown Structure", "QA/QC Checklist", "LOIN Matrix"] },
-    { name: "Professional", price: "$79", href: "/checkout/appendix-professional", featured: true, features: ["Everything in Standard", "MIDP, clash matrix and TIDP", "All six editable Excel templates"] },
-    { name: "Ultimate", price: "$129", href: "/checkout/appendix-ultimate", features: ["Everything in Professional", "Structured implementation review", "Project-specific appendix guidance"] },
-  ]},
-];
+"use client";
 
-const previews = [
-  { name: "Model Breakdown Structure", image: "/appendix-previews/model-breakdown.png" },
-  { name: "Model QA/QC Checklist", image: "/appendix-previews/qaqc-checklist.png" },
-  { name: "Level of Information Need Matrix", image: "/appendix-previews/loin-matrix.png" },
-  { name: "Master Information Delivery Plan", image: "/appendix-previews/midp.png" },
-  { name: "Master Clash Detection Matrix", image: "/appendix-previews/clash-matrix.png" },
-  { name: "Task Information Delivery Plan", image: "/appendix-previews/tidp.png" },
-];
+import { useEffect, useState } from "react";
 
 export default function Home() {
-  return (
-    <main>
-      <nav className="nav shell" aria-label="Primary navigation">
-        <a className="brand" href="#top" aria-label="BIMVERSE home"><span className="brandMark">BV</span><span>BIMVERSE</span></a>
-        <div className="navLinks"><a href="#products">Products</a><a href="#appendix-preview">Preview</a><a href="#delivery">Delivery</a></div>
-      </nav>
-      <section className="hero shell" id="top">
-        <div className="heroCopy">
-          <p className="eyebrow">Professional BIM resources</p>
-          <h1>Structured tools for real-world BIM delivery.</h1>
-          <p className="lede">Practical templates and documentation resources for BIM managers, coordinators, architects, engineers, contractors and consultants.</p>
-          <a className="primaryButton" href="#products">Explore BIM products</a>
-        </div>
-        <div className="systemCard" aria-label="BIM information framework">
-          <span className="systemLabel">INFORMATION FRAMEWORK</span><div className="systemCore">BEP</div>
-          <div className="systemGrid"><span>Architecture</span><span>Structure</span><span>MEP</span><span>CDE</span></div>
-        </div>
-      </section>
-      <section className="products shell" id="products">
-        <div className="sectionHeading"><p className="eyebrow">Product system</p><h2>Choose the support level your project needs.</h2></div>
-        {productGroups.map((group) => (
-          <div className="productGroup" key={group.number}>
-            <div className="groupHeading"><span>{group.number}</span><div><h3>{group.title}</h3><p>{group.intro}</p></div></div>
-            <div className="tierGrid">{group.tiers.map((tier) => (
-              <article className={`tierCard${tier.featured ? " featured" : ""}`} key={tier.name}>
-                {tier.featured && <p className="recommended">Recommended</p>}
-                <p className="productMeta">{tier.name}</p><p className="tierPrice">{tier.price}<small> one-time</small></p>
-                <ul>{tier.features.map((feature) => <li key={feature}>{feature}</li>)}</ul>
-                <a className="checkoutButton ready" href={tier.href}>Buy securely</a>
-              </article>
-            ))}</div>
-          </div>
-        ))}
-      </section>
-      <section className="previewSection" id="appendix-preview"><div className="shell">
-        <div className="sectionHeading"><p className="eyebrow">Product 02 preview</p><h2>See the working templates before you buy.</h2></div>
-        <p className="previewIntro">Real previews rendered from the editable Excel package. Project fields remain as placeholders for your team to customize.</p>
-        <div className="previewGrid">{previews.map((preview) => (
-          <figure className="previewCard" key={preview.name}><div className="previewFrame"><img src={preview.image} alt={`${preview.name} spreadsheet preview`} loading="lazy" /></div><figcaption>{preview.name}</figcaption></figure>
-        ))}</div>
-      </div></section>
-      <section className="delivery shell" id="delivery">
-        <p className="eyebrow">Secure delivery</p><h2>One payment. Immediate access. No monthly subscription.</h2>
-        <div className="deliverySteps"><span>01 Select product and tier</span><span>02 Pay securely through Stripe</span><span>03 Receive protected download access</span></div>
-      </section>
-    </main>
-  );
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setOpen(true), 1100);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  return <main>
+    <nav className="nav shell" aria-label="Primary navigation">
+      <a className="brand" href="#top" aria-label="BIMVERSE home"><span className="brandMark">BV</span><span>BIMVERSE</span></a>
+      <div className="navLinks"><a href="#workspace">BEP workspace</a><a href="#membership">Membership</a><a href="/portal">Member login</a></div>
+    </nav>
+
+    <section className="hero shell" id="top">
+      <div className="heroCopy revealUp">
+        <p className="eyebrow">BIMVERSE V3 · Subscription workspace</p>
+        <h1>Build an issue-ready BEP without changing its professional design.</h1>
+        <p className="lede">Complete the full project-information workflow, review the original 39-page BIMVERSE document, save your progress and download the completed PDF when every required detail is ready.</p>
+        <div className="heroActions"><a className="primaryButton" href="/portal">Open BEP workspace</a><button className="textButton" onClick={() => setOpen(true)}>View membership</button></div>
+      </div>
+      <div className="systemCard portalVisual revealScale" aria-label="BIMVERSE V3 document workflow">
+        <span className="systemLabel">BIMVERSE DOCUMENT ENGINE</span><div className="systemCore">39</div>
+        <div className="systemGrid"><span>Project data</span><span>Protected preview</span><span>Saved draft</span><span>Final PDF</span></div>
+        <div className="orbit orbitOne"/><div className="orbit orbitTwo"/>
+      </div>
+    </section>
+
+    <section className="v3Feature shell" id="workspace">
+      <div className="sectionHeading"><p className="eyebrow">The complete workflow</p><h2>One controlled workspace from blank fields to final BEP.</h2></div>
+      <div className="workflowGrid">
+        <article><span>01</span><h3>Complete all project details</h3><p>Work through document control, project scope, stakeholders, EIR, milestones, CDE, coordinates, naming, technology, responsibilities and appendices.</p></article>
+        <article><span>02</span><h3>Review the exact document</h3><p>Your protected preview uses the original 39-page BIMVERSE BEP—not a simplified web recreation.</p></article>
+        <article><span>03</span><h3>Continue from any device</h3><p>Private cloud drafts let members stop, return and continue the project-information workflow securely.</p></article>
+        <article><span>04</span><h3>Unlock the completed PDF</h3><p>Final export is enabled only after required details are complete and the subscription is active.</p></article>
+      </div>
+    </section>
+
+    <section className="membershipSection" id="membership"><div className="shell membershipInner">
+      <div><p className="eyebrow">BIMVERSE Professional</p><h2>A growing BIM delivery system—not another template download.</h2><p>Access the BEP authoring portal, protected project previews, persistent drafts and future professional BIM workflow updates.</p></div>
+      <div className="membershipCard"><p>Professional access</p><strong>$19 <small>/ month</small></strong><ul><li>Full BEP authoring workspace</li><li>Original 39-page document preview</li><li>Saved project drafts</li><li>Completed PDF export</li></ul><button onClick={() => setOpen(true)}>Choose membership</button></div>
+    </div></section>
+
+    <section className="delivery shell" id="delivery"><p className="eyebrow">Controlled member access</p><h2>Subscribe. Complete. Review. Download.</h2><div className="deliverySteps"><span>01 Activate membership</span><span>02 Complete and save the BEP</span><span>03 Download the validated PDF</span></div></section>
+
+    {open && <div className="modalBackdrop" role="button" tabIndex={0} aria-label="Close membership popup" onMouseDown={(event) => { if (event.target === event.currentTarget) setOpen(false); }} onKeyDown={(event) => { if (event.key === "Escape" || event.key === "Enter") setOpen(false); }}><section className="membershipModal" role="dialog" aria-modal="true" aria-labelledby="membership-title"><button className="modalClose" aria-label="Close membership popup" onClick={() => setOpen(false)}>×</button><p className="eyebrow">Start BIMVERSE V3</p><h2 id="membership-title">Choose your professional access.</h2><p>Both plans unlock the same complete BEP workspace. Annual access includes two months effectively free.</p><div className="modalPlans"><a href="https://buy.stripe.com/test_14A00j8fZfjleM9c3rfIs0i"><span>Monthly</span><strong>$19</strong><small>per month</small></a><a className="bestPlan" href="https://buy.stripe.com/test_28EeVd2VF0oreM97NbfIs0j"><b>BEST VALUE</b><span>Annual</span><strong>$190</strong><small>per year</small></a></div><a className="existingMember" href="/portal">Already a member? Open your workspace →</a><small className="testNotice">Checkout remains in Stripe test mode during V3 review.</small></section></div>}
+  </main>;
 }
