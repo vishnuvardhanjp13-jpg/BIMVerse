@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BIMVERSE360 — Collaboration, in the browser.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root{
+    --bg:#eef3f8;
+    --navy:#172536;
+    --blue:#006eaf;
+    --blue-soft:#0696d755;
+    --cyan:#00a6a6;
+    --white:#172536;
+    --grey:#607487;
+    --line:#c9d5df;
+    --panel:linear-gradient(145deg,rgba(255,255,255,.96),rgba(242,247,251,.88));
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;background:var(--bg);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;overflow:hidden;}
+  body{display:flex;align-items:center;justify-content:center;min-height:100vh;width:100vw;}
+
+  .frame{
+    position:relative;width:100%;max-width:1000px;aspect-ratio:16/9;
+    background:linear-gradient(135deg,#f9fbfd 0%,#eaf3f8 48%,#f5f9fc 100%);
+    border-radius:24px;overflow:hidden;
+    box-shadow:0 32px 90px -30px rgba(41,74,99,.35),0 0 0 1px rgba(108,135,155,.18);
+    isolation:isolate;
+  }
+  .frame::before,.frame::after{content:"";position:absolute;width:58%;aspect-ratio:1;border-radius:50%;
+    filter:blur(58px);opacity:.48;z-index:-1;will-change:transform;}
+  .frame::before{left:-18%;top:-28%;background:radial-gradient(circle,#bde9ff 0%,rgba(189,233,255,0) 70%);
+    animation:floatGlowA 12s ease-in-out infinite alternate;}
+  .frame::after{right:-20%;bottom:-38%;background:radial-gradient(circle,#b9f0e6 0%,rgba(185,240,230,0) 70%);
+    animation:floatGlowB 15s ease-in-out infinite alternate;}
+  @keyframes floatGlowA{to{transform:translate(28%,22%) scale(1.16);}}
+  @keyframes floatGlowB{to{transform:translate(-24%,-28%) scale(.92);}}
+
+  .grid-bg{position:absolute;inset:0;
+    background-image:linear-gradient(to right, rgba(0,110,175,.075) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(0,110,175,.075) 1px, transparent 1px);
+    background-size:34px 34px;opacity:.7;animation:gridDrift 18s linear infinite;
+    mask-image:radial-gradient(78% 78% at 50% 46%, black 40%, transparent 92%);
+  }
+  @keyframes gridDrift{to{background-position:34px 34px;}}
+  .vignette{position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 50%,transparent 48%,rgba(105,137,158,.12) 100%);}
+  .brandmark-mini{position:absolute;top:14px;left:18px;font-family:'Courier New',monospace;
+    font-size:.58rem;letter-spacing:.16em;color:var(--grey);opacity:.6;z-index:5;}
+
+  /* ============ DYNAMIC ISLAND ============ */
+  .island{
+    position:absolute;top:18px;right:18px;
+    background:rgba(255,255,255,.82);border:1px solid rgba(255,255,255,.9);
+    width:42px;height:42px;border-radius:21px;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;z-index:30;
+    transition:width 980ms cubic-bezier(.16,1,.3,1), height 980ms cubic-bezier(.16,1,.3,1),
+               border-radius 980ms cubic-bezier(.16,1,.3,1), box-shadow 980ms ease;
+    box-shadow:0 16px 42px rgba(51,83,108,.18),inset 0 1px rgba(255,255,255,.8);
+    backdrop-filter:blur(22px) saturate(1.35);-webkit-backdrop-filter:blur(22px) saturate(1.35);
+  }
+  .island .idle-dot{width:5px;height:5px;border-radius:50%;background:var(--cyan);opacity:.7;
+    transition:opacity 200ms ease;}
+  .island .content{display:flex;align-items:center;gap:9px;width:100%;padding:0 14px;
+    opacity:0;transform:translateX(12px);transition:opacity 520ms ease 420ms,transform 700ms ease 360ms;white-space:nowrap;}
+  .island.expanded{width:min(42%,360px);height:66px;border-radius:20px;}
+  .island.expanded .idle-dot{opacity:0;}
+  .island.expanded .content{opacity:1;transform:translateX(0);}
+  .island .role-dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;
+    background:var(--blue);box-shadow:0 0 0 4px rgba(0,110,175,.12);}
+  .island .text-wrap{display:flex;flex-direction:column;overflow:hidden;}
+  .island .role{font-family:'Courier New',monospace;font-size:.56rem;letter-spacing:.11em;
+    color:var(--cyan);text-transform:uppercase;}
+  .island .msg{font-size:.68rem;color:var(--white);overflow:hidden;text-overflow:ellipsis;}
+
+  /* iPhone-inspired stacked notification banners */
+  .notification-stack{position:absolute;top:18px;right:18px;width:min(34%,320px);z-index:35;
+    display:flex;flex-direction:column;align-items:stretch;gap:8px;pointer-events:none;}
+  .notification-card{position:relative;min-height:64px;padding:11px 13px 11px 48px;border-radius:18px;
+    background:rgba(255,255,255,.79);border:1px solid rgba(255,255,255,.92);
+    box-shadow:0 14px 36px rgba(43,71,92,.16),inset 0 1px rgba(255,255,255,.9);
+    backdrop-filter:blur(24px) saturate(1.45);-webkit-backdrop-filter:blur(24px) saturate(1.45);
+    opacity:0;transform:translateX(42px) scale(.94);transform-origin:top right;
+    transition:opacity 900ms ease,transform 1100ms cubic-bezier(.16,1,.3,1),margin 800ms ease;}
+  .notification-card.show{opacity:1;transform:translateX(0) scale(1);}
+  .notification-card.leaving{opacity:0;transform:translateX(26px) scale(.96);margin-top:-72px;}
+  .notification-icon{position:absolute;left:12px;top:14px;width:27px;height:27px;border-radius:8px;
+    background:linear-gradient(145deg,#078bd0,#006eaf);display:grid;place-items:center;color:white;
+    font-size:10px;font-weight:800;box-shadow:0 5px 12px rgba(0,110,175,.25);}
+  .notification-meta{display:flex;justify-content:space-between;gap:8px;font-size:.5rem;line-height:1.2;
+    letter-spacing:.11em;color:#648092;text-transform:uppercase;font-weight:700;}
+  .notification-title{margin-top:4px;font-size:.68rem;font-weight:750;color:#172536;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;}
+  .notification-msg{margin-top:2px;font-size:.59rem;color:#607487;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  /* ============ STAGE / SCENES ============ */
+  .stage{position:absolute;inset:6% 4% 8%;overflow:hidden;border-radius:18px;}
+
+  #build-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    opacity:0;transition:opacity 900ms ease;}
+  #build-wrap.active{opacity:1;}
+  #build-wrap.receding{opacity:0;transform:scale(.94);transition:opacity 900ms ease, transform 1200ms ease;}
+
+  .building-svg{width:46%;max-width:430px;max-height:72%;height:auto;overflow:visible;
+    filter:drop-shadow(0 24px 24px rgba(45,79,100,.14));animation:buildingFloat 7s ease-in-out infinite alternate;}
+  @keyframes buildingFloat{to{transform:translateY(-5px);}}
+  .floor{opacity:0;transform:translateY(26px);transform-box:fill-box;transform-origin:center;
+    transition:opacity 700ms cubic-bezier(.16,.8,.24,1), transform 700ms cubic-bezier(.16,.8,.24,1);}
+  #build-wrap.active .floor{opacity:1;transform:translateY(0);}
+  .iso-top{fill:rgba(255,255,255,.9);stroke:#698da4;stroke-width:1.2;}
+  .iso-left{fill:rgba(208,229,240,.84);stroke:#698da4;stroke-width:1.2;}
+  .iso-right{fill:rgba(178,211,229,.72);stroke:#698da4;stroke-width:1.2;}
+  .iso-frame{fill:none;stroke:#7296ab;stroke-width:1;opacity:.85;}
+  .iso-column{stroke:#7296ab;stroke-width:1;opacity:.5;}
+  .floor .facade{fill:rgba(0,110,175,0);transition:fill 1400ms ease;}
+  #build-wrap.facade-on .floor .facade{fill:rgba(0,110,175,.13);}
+  .floor .flabel{font-family:'Courier New',monospace;font-size:7.5px;letter-spacing:.06em;
+    fill:var(--grey);opacity:0;transition:opacity 600ms ease 300ms;}
+  #build-wrap.active .floor .flabel{opacity:.85;}
+  #build-wrap.active .floor:nth-of-type(2n){animation:floorBreath 5s ease-in-out infinite alternate;}
+  @keyframes floorBreath{to{filter:brightness(1.035);}}
+
+  .mep-line{fill:none;stroke:var(--cyan);stroke-width:1;stroke-dasharray:6 4;
+    stroke-dashoffset:0;opacity:0;transition:opacity 500ms ease;}
+  #build-wrap.mep-on .mep-line{opacity:.85;animation:dash 3.4s linear infinite;}
+  @keyframes dash{ to{ stroke-dashoffset:-40; } }
+
+  .twin-sweep{fill:none;stroke:url(#sweepGrad);stroke-width:70;opacity:0;}
+  #build-wrap.twin-on .twin-sweep{animation:sweepUp 2.1s ease forwards;}
+  @keyframes sweepUp{
+    0%{ opacity:0; transform:translateY(120px); }
+    12%{ opacity:.9; }
+    85%{ opacity:.5; }
+    100%{ opacity:0; transform:translateY(-260px); }
+  }
+
+  .ground{fill:rgba(255,255,255,.32);stroke:#7896aa;stroke-width:1.2;}
+  .hatch{stroke:#a8bac7;stroke-width:1;opacity:.75;}
+
+  /* network hub during phase D */
+  .hub{opacity:0;transition:opacity 700ms ease;}
+  #build-wrap.network-on .hub{opacity:1;}
+  .hub circle.core{fill:rgba(57,201,209,.12);stroke:var(--cyan);stroke-width:1.2;}
+  .hub circle.pulse{fill:none;stroke:var(--cyan);stroke-width:1;opacity:.7;}
+  #build-wrap.network-on .hub circle.pulse{animation:pulseRing 2.2s ease-out infinite;}
+  @keyframes pulseRing{
+    0%{ r:6; opacity:.8; } 100%{ r:34; opacity:0; }
+  }
+  .hub path{fill:none;stroke:var(--blue);stroke-width:1.2;stroke-dasharray:180;stroke-dashoffset:180;}
+  #build-wrap.network-on .hub path{animation:hubdraw 1.6s ease forwards;}
+  #build-wrap.network-on .hub path:nth-child(3){animation-delay:.15s;}
+  #build-wrap.network-on .hub path:nth-child(4){animation-delay:.3s;}
+  #build-wrap.network-on .hub path:nth-child(5){animation-delay:.45s;}
+  #build-wrap.network-on .hub path:nth-child(6){animation-delay:.6s;}
+  @keyframes hubdraw{ to{ stroke-dashoffset:0; } }
+
+  /* ============ CURSORS ============ */
+  #cursors{position:absolute;inset:0;opacity:0;transition:opacity 700ms ease;}
+  #cursors.active{opacity:1;}
+  #cursors.fade{opacity:0;}
+  .cursor{position:absolute;display:flex;align-items:center;gap:6px;transform:translate(-50%,-50%);
+    animation-timing-function:cubic-bezier(.45,0,.2,1);animation-fill-mode:both;animation-iteration-count:1;}
+  .cursor .dot{width:10px;height:10px;border-radius:50%;background:var(--blue);
+    box-shadow:0 0 0 3px rgba(61,123,255,.18),0 0 12px rgba(61,123,255,.7);}
+  .cursor .role{font-family:'Courier New',monospace;font-size:.55rem;letter-spacing:.09em;color:var(--white);
+    background:rgba(255,255,255,.9);border:1px solid var(--line);padding:3px 7px;border-radius:7px;
+    box-shadow:0 6px 16px rgba(58,84,102,.12);white-space:nowrap;}
+  #cursors.active .c1{animation:c1move 6s 1 both;}
+  #cursors.active .c2{animation:c2move 6s .25s 1 both;}
+  #cursors.active .c3{animation:c3move 6s .5s 1 both;}
+  #cursors.active .c4{animation:c4move 6s .75s 1 both;}
+  @keyframes c1move{0%{left:16%;top:74%;opacity:0;}10%{opacity:1;}40%{left:30%;top:40%;}75%{left:42%;top:22%;}100%{left:44%;top:18%;opacity:1;}}
+  @keyframes c2move{0%{left:82%;top:70%;opacity:0;}10%{opacity:1;}42%{left:66%;top:44%;}78%{left:52%;top:30%;}100%{left:52%;top:26%;opacity:1;}}
+  @keyframes c3move{0%{left:10%;top:20%;opacity:0;}10%{opacity:1;}46%{left:32%;top:30%;}80%{left:46%;top:46%;}100%{left:46%;top:48%;opacity:1;}}
+  @keyframes c4move{0%{left:88%;top:18%;opacity:0;}10%{opacity:1;}44%{left:64%;top:26%;}78%{left:54%;top:60%;}100%{left:54%;top:62%;opacity:1;}}
+
+  /* ============ TYPOGRAPHY OVERLAY ============ */
+  .overlay-text{position:absolute;left:50%;bottom:7%;transform:translateX(-50%);
+    text-align:center;color:var(--white);pointer-events:none;width:92%;}
+  .headline{font-size:clamp(1.65rem,5.2vw,3.65rem);font-weight:900;letter-spacing:-.055em;line-height:.82;
+    opacity:0;transform:translateY(10px);transition:opacity 700ms ease, transform 700ms ease;}
+  .headline.show{opacity:1;transform:translateY(0);}
+  .headline .eyebrow{display:block;margin-bottom:12px;font-family:'Courier New',monospace;font-size:.16em;
+    letter-spacing:.34em;color:var(--blue);line-height:1;font-weight:700;}
+  .headline .solid{display:block;white-space:nowrap;}
+  .headline .outline{display:block;color:transparent;-webkit-text-stroke:1.2px #6e8798;letter-spacing:-.065em;}
+  .caption{margin-top:18px;font-family:'Courier New',monospace;font-size:clamp(.52rem,.95vw,.68rem);
+    color:var(--grey);letter-spacing:.18em;text-transform:uppercase;font-weight:700;
+    opacity:0;transition:opacity 600ms ease;}
+  .caption.show{opacity:1;}
+
+  /* ============ BRAND LOCKUP ============ */
+  #lockup{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;opacity:0;transition:opacity 1000ms ease;
+    background:radial-gradient(80% 80% at 50% 50%,rgba(255,255,255,.96) 0%,rgba(231,242,248,.97) 100%);}
+  #lockup.active{opacity:1;}
+  .logo-mark{font-size:clamp(2rem,7.4vw,5rem);font-weight:900;letter-spacing:-.065em;
+    background:linear-gradient(90deg,#172536,#006eaf 60%,var(--cyan));-webkit-background-clip:text;
+    background-clip:text;color:transparent;opacity:0;transform:translateY(10px) scale(.97);
+    transition:opacity 900ms ease 200ms, transform 900ms ease 200ms;}
+  #lockup.active .logo-mark{opacity:1;transform:translateY(0) scale(1);}
+  .logo-rule{width:46px;height:1px;background:var(--line);margin:18px auto 0;opacity:0;
+    transition:opacity 900ms ease 900ms;}
+  #lockup.active .logo-rule{opacity:1;}
+  .logo-sub{margin-top:14px;font-size:.68rem;letter-spacing:.22em;color:var(--cyan);
+    font-family:'Courier New',monospace;text-transform:uppercase;opacity:0;transition:opacity 900ms ease 600ms;}
+  #lockup.active .logo-sub{opacity:1;}
+  .logo-tag{margin-top:20px;font-size:clamp(.7rem,1.6vw,.9rem);color:var(--grey);opacity:0;
+    transition:opacity 900ms ease 1000ms;}
+  #lockup.active .logo-tag{opacity:1;}
+
+  /* ============ CONTROLS ============ */
+  .controls{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:12px;
+    padding:10px 16px;background:linear-gradient(0deg,rgba(235,243,248,.92),transparent);z-index:40;}
+  .play-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);
+    background:rgba(255,255,255,.88);color:var(--blue);cursor:pointer;display:flex;align-items:center;
+    justify-content:center;font-size:.7rem;flex:0 0 auto;}
+  .play-btn:hover{border-color:var(--blue);}
+  .progress-track{flex:1;height:3px;background:rgba(55,86,108,.16);border-radius:2px;
+    cursor:pointer;position:relative;}
+  .progress-fill{position:absolute;left:0;top:0;bottom:0;width:0%;
+    background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:2px;}
+  .time-label{font-family:'Courier New',monospace;font-size:.6rem;color:var(--grey);
+    flex:0 0 auto;min-width:64px;text-align:right;}
+  @media(max-width:620px){
+    .frame{border-radius:0;height:100%;aspect-ratio:auto;}
+    .brandmark-mini{top:12px;left:12px;}
+    .notification-stack{top:12px;right:12px;width:min(78%,310px);gap:6px;}
+    .notification-card{min-height:58px;padding-top:9px;padding-bottom:9px;border-radius:16px;}
+    .stage{inset:7% 3% 9%;}
+    .building-svg{width:88%;max-height:62%;}
+    .overlay-text{bottom:6%;width:96%;}
+    .headline{font-size:clamp(1.55rem,9.5vw,2.55rem);}
+    .headline .outline{-webkit-text-stroke:1px #6e8798;}
+    .caption{margin-top:13px;font-size:.48rem;letter-spacing:.11em;}
+  }
+  @media(prefers-reduced-motion:reduce){.frame::before,.frame::after,.grid-bg{animation:none;}}
+</style>
+</head>
+<body>
+
+<div class="frame">
+  <div class="grid-bg"></div>
+  <div class="vignette"></div>
+  <div class="brandmark-mini">BIMVERSE360 &mdash; BRAND FILM</div>
+
+  <div class="notification-stack" id="notificationStack" aria-live="polite"></div>
+
+  <div class="stage">
+
+    <!-- DIGITAL CONSTRUCTION SEQUENCE -->
+    <div id="build-wrap">
+      <svg class="building-svg" viewBox="0 0 300 420" xmlns="http://www.w3.org/2000/svg" aria-label="Isometric building assembling from foundation to roof">
+        <defs>
+          <linearGradient id="sweepGrad" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stop-color="#39c9d1" stop-opacity="0"/>
+            <stop offset="50%" stop-color="#39c9d1" stop-opacity=".55"/>
+            <stop offset="100%" stop-color="#39c9d1" stop-opacity="0"/>
+          </linearGradient>
+          <clipPath id="clipBuild"><path d="M45 70 L155 35 L255 70 L255 350 L145 385 L45 350 Z"/></clipPath>
+        </defs>
+
+        <!-- isometric construction site / foundation -->
+        <polygon class="ground" points="24,356 145,318 276,363 151,402"/>
+        <path class="hatch" d="M45 350 L151 384 L255 350 M75 342 L178 376 M109 332 L210 366 M145 322 L243 355"/>
+
+        <!-- floors, bottom to top -->
+        <g class="floor" style="transition-delay:.07s">
+          <polygon class="iso-left facade" points="45,324 145,357 145,385 45,352"/>
+          <polygon class="iso-right facade" points="145,357 255,322 255,350 145,385"/>
+          <polygon class="iso-top" points="45,324 155,290 255,322 145,357"/>
+          <path class="iso-frame" d="M45 324 L145 357 L255 322 M145 357 V385"/>
+          <text class="flabel" x="165" y="316">L00 · FOUNDATION</text>
+        </g>
+        <g class="floor" style="transition-delay:.65s">
+          <polygon class="iso-left facade" points="45,272 145,305 145,333 45,300"/>
+          <polygon class="iso-right facade" points="145,305 255,270 255,298 145,333"/>
+          <polygon class="iso-top" points="45,272 155,238 255,270 145,305"/>
+          <path class="iso-frame" d="M45 272 L145 305 L255 270 M145 305 V333"/>
+          <path class="iso-column" d="M65 279 V316 M120 297 V330 M180 297 V322 M235 279 V304"/>
+          <text class="flabel" x="165" y="264">L01 · STRUCTURE</text>
+        </g>
+        <g class="floor" style="transition-delay:1.24s">
+          <polygon class="iso-left facade" points="45,220 145,253 145,281 45,248"/>
+          <polygon class="iso-right facade" points="145,253 255,218 255,246 145,281"/>
+          <polygon class="iso-top" points="45,220 155,186 255,218 145,253"/>
+          <path class="iso-frame" d="M45 220 L145 253 L255 218 M145 253 V281"/>
+          <path class="iso-column" d="M65 227 V264 M120 245 V278 M180 245 V270 M235 227 V252"/>
+          <text class="flabel" x="165" y="212">L02 · STRUCTURE</text>
+        </g>
+        <g class="floor" style="transition-delay:1.82s">
+          <polygon class="iso-left facade" points="45,168 145,201 145,229 45,196"/>
+          <polygon class="iso-right facade" points="145,201 255,166 255,194 145,229"/>
+          <polygon class="iso-top" points="45,168 155,134 255,166 145,201"/>
+          <path class="iso-frame" d="M45 168 L145 201 L255 166 M145 201 V229"/>
+          <path class="iso-column" d="M65 175 V212 M120 193 V226 M180 193 V218 M235 175 V200"/>
+          <text class="flabel" x="165" y="160">L03 · MEP</text>
+        </g>
+        <g class="floor" style="transition-delay:2.4s">
+          <polygon class="iso-left facade" points="45,116 145,149 145,177 45,144"/>
+          <polygon class="iso-right facade" points="145,149 255,114 255,142 145,177"/>
+          <polygon class="iso-top" points="45,116 155,82 255,114 145,149"/>
+          <path class="iso-frame" d="M45 116 L145 149 L255 114 M145 149 V177"/>
+          <path class="iso-column" d="M65 123 V160 M120 141 V174 M180 141 V166 M235 123 V148"/>
+          <text class="flabel" x="165" y="108">L04 · INTERIOR</text>
+        </g>
+        <g class="floor" style="transition-delay:2.99s">
+          <polygon class="iso-left facade" points="45,64 145,97 145,125 45,92"/>
+          <polygon class="iso-right facade" points="145,97 255,62 255,90 145,125"/>
+          <polygon class="iso-top" points="45,64 155,30 255,62 145,97"/>
+          <path class="iso-frame" d="M45 64 L145 97 L255 62 M145 97 V125"/>
+          <text class="flabel" x="165" y="56">L05 · FACADE / ROOF</text>
+        </g>
+
+        <!-- MEP service lines -->
+        <g clip-path="url(#clipBuild)">
+          <path class="mep-line" d="M 55,184 L145,214 L245,182"/>
+          <path class="mep-line" d="M 55,236 L145,266 L245,234"/>
+          <path class="mep-line" d="M 91,335 L91,105"/>
+          <path class="mep-line" d="M 211,323 L211,94"/>
+        </g>
+
+        <!-- digital twin scan sweep -->
+        <rect class="twin-sweep" x="55" y="0" width="190" height="6"/>
+
+        <!-- coordination hub (phase D) -->
+        <g class="hub" transform="translate(150,205)">
+          <circle class="pulse" r="6"/>
+          <circle class="core" r="10"/>
+          <path d="M 0,0 C -30,-20 -55,-40 -70,-70"/>
+          <path d="M 0,0 C 30,-20 55,-40 70,-70"/>
+          <path d="M 0,0 C -30,20 -55,50 -70,90"/>
+          <path d="M 0,0 C 30,20 55,50 70,90"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- CURSORS -->
+    <div id="cursors">
+      <div class="cursor c1"><span class="dot"></span><span class="role">ARCHITECT</span></div>
+      <div class="cursor c2"><span class="dot"></span><span class="role">BIM COORDINATOR</span></div>
+      <div class="cursor c3"><span class="dot"></span><span class="role">ENGINEER</span></div>
+      <div class="cursor c4"><span class="dot"></span><span class="role">PROJECT MANAGER</span></div>
+    </div>
+
+    <!-- TYPOGRAPHY OVERLAY -->
+    <div class="overlay-text">
+      <div class="headline" id="headline"></div>
+      <div class="caption" id="caption"></div>
+    </div>
+
+    <!-- BRAND LOCKUP -->
+    <div id="lockup">
+      <div class="logo-mark"><span>BIMVERSE</span><span style="color:#087ec4">360</span></div>
+      <div class="logo-rule"></div>
+      <div class="logo-sub">Collaboration &bull; Information &bull; BIM Delivery</div>
+      <div class="logo-tag">Build the digital project before the real one.</div>
+    </div>
+
+  </div>
+
+  <div class="controls">
+    <button class="play-btn" id="playBtn" title="Replay">&#9658;</button>
+    <div class="progress-track" id="progressTrack">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="time-label" id="timeLabel">00:00 / 00:07</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const TOTAL = 7000;
+  const SPEED = TOTAL / 30000;
+  const buildWrap = document.getElementById('build-wrap');
+  const cursors = document.getElementById('cursors');
+  const headline = document.getElementById('headline');
+  const caption = document.getElementById('caption');
+  const lockup = document.getElementById('lockup');
+  const notificationStack = document.getElementById('notificationStack');
+  const progressFill = document.getElementById('progressFill');
+  const timeLabel = document.getElementById('timeLabel');
+  const playBtn = document.getElementById('playBtn');
+  const progressTrack = document.getElementById('progressTrack');
+
+  let timers = [];
+  let rafId = null;
+  let startTime = null;
+  let playing = false;
+
+  function fmt(ms){
+    const s = Math.max(0, Math.floor(ms/1000));
+    const m = Math.floor(s/60), r = s%60;
+    return (m<10?'0'+m:m)+':'+(r<10?'0'+r:r);
+  }
+  function schedule(fn,t){ timers.push(setTimeout(fn,t*SPEED)); }
+  function clearAll(){ timers.forEach(t=>clearTimeout(t)); timers=[]; }
+
+  function setHeadline(text, sub){
+    headline.classList.remove('show'); caption.classList.remove('show');
+    setTimeout(()=>{
+      headline.innerHTML = text || '';
+      if(text){ headline.classList.add('show'); }
+      if(sub){ caption.textContent = sub; caption.classList.add('show'); }
+    },260);
+  }
+  function clearHeadline(){ headline.classList.remove('show'); caption.classList.remove('show'); }
+
+  function popIsland(role, msg, holdMs){
+    const card = document.createElement('div');
+    card.className = 'notification-card';
+    card.innerHTML = '<span class="notification-icon">B</span>'+
+      '<div class="notification-meta"><span>BIMVERSE360</span><span>NOW</span></div>'+
+      '<div class="notification-title"></div><div class="notification-msg"></div>';
+    card.querySelector('.notification-title').textContent = role;
+    card.querySelector('.notification-msg').textContent = msg;
+    notificationStack.prepend(card);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>card.classList.add('show')));
+    while(notificationStack.children.length > 3){
+      notificationStack.lastElementChild.remove();
+    }
+    setTimeout(()=>{
+      card.classList.add('leaving');
+      setTimeout(()=>card.remove(),1100);
+    },holdMs*SPEED);
+  }
+
+  // ---- targeted-audience notification queue ----
+  const notifications = [
+    [300,  'ARCHITECT',           'Drafting the design intent', 6500],
+    [2900, 'STRUCTURAL ENGINEER', 'Framing the structure', 6500],
+    [5500, 'BIM COORDINATOR',     'Merging models across trades', 6500],
+    [8100, 'MEP ENGINEER',        'Routing services & systems', 6500],
+    [10700,'CONTRACTOR',          'Sequencing the build on site', 6500],
+    [13300,'QUANTITY SURVEYOR',   'Tracking cost against plan', 6500],
+    [15900,'PROJECT MANAGER',     'Keeping every discipline aligned', 6500],
+    [18500,'FACILITIES MANAGER',  'Planning for handover & operations', 6500],
+    [21100,'CLIENT / OWNER',      'Watching the project come to life', 6500],
+    [23700,'BIM MANAGER',         'Zero clashes. Full coordination.', 5600],
+    [26200,'ALL TEAMS',           'One project. One browser.', 3500]
+  ];
+
+  function runTimeline(){
+    clearAll();
+    buildWrap.classList.remove('active','facade-on','mep-on','twin-on','network-on','receding');
+    cursors.classList.remove('active','fade');
+    lockup.classList.remove('active');
+    notificationStack.innerHTML = '';
+    clearHeadline();
+    document.querySelectorAll('.cursor').forEach(c=>{
+      c.style.animation='none'; void c.offsetWidth; c.style.animation='';
+    });
+
+    notifications.forEach(n=>{
+      schedule(()=>popIsland(n[1], n[2], n[3]), n[0]);
+    });
+
+    // 0:00 STRUCTURE RISES
+    schedule(()=>{
+      buildWrap.classList.add('active');
+    }, 100);
+
+    // 0:09 SYSTEMS & COORDINATION
+    schedule(()=>{ buildWrap.classList.add('mep-on'); }, 9000);
+    schedule(()=>{ buildWrap.classList.add('facade-on'); }, 11800);
+    schedule(()=>{ buildWrap.classList.add('twin-on'); }, 13800);
+
+    // 0:15.5 TEAMS COLLABORATE
+    schedule(()=>{
+      cursors.classList.add('active');
+      setHeadline('<span class="eyebrow">BIMVERSE360</span><span class="solid">ONE PROJECT</span>', 'Different people · Different responsibilities');
+    }, 15500);
+    schedule(()=>{
+      setHeadline('<span class="eyebrow">CONNECTED DELIVERY</span><span class="solid">MULTIPLE</span><span class="outline">CONTRIBUTORS</span>', 'One digital project · Built together');
+    }, 18400);
+
+    // 0:21 NETWORK & REVEAL
+    schedule(()=>{
+      cursors.classList.add('fade');
+      buildWrap.classList.add('network-on');
+      setHeadline('<span class="eyebrow">BIMVERSE360</span><span class="solid">COLLABORATION</span><span class="outline">IN THE BROWSER.</span>', 'BIM · Information · Coordination · Delivery');
+    }, 21100);
+    schedule(()=>{
+      setHeadline('<span class="eyebrow">BUILD TOGETHER</span><span class="solid">IN THE</span><span class="outline">BROWSER.</span>', 'Build the digital project before the real one');
+    }, 24000);
+
+    // 0:27 BRAND LOCKUP
+    schedule(()=>{
+      buildWrap.classList.add('receding');
+      cursors.classList.remove('active');
+      clearHeadline();
+      lockup.classList.add('active');
+    }, 27000);
+
+    schedule(()=>{ playing=false; playBtn.innerHTML='&#9658;'; }, 30400);
+  }
+
+  function tick(ts){
+    if(!startTime) startTime = ts;
+    const elapsed = Math.min(ts-startTime, TOTAL);
+    progressFill.style.width = (elapsed/TOTAL*100)+'%';
+    timeLabel.textContent = fmt(elapsed)+' / '+fmt(TOTAL);
+    if(elapsed<TOTAL && playing){ rafId = requestAnimationFrame(tick); }
+  }
+
+  function play(){
+    playing = true; startTime = null;
+    playBtn.innerHTML = '&#10074;&#10074;';
+    lockup.classList.remove('active');
+    runTimeline();
+    cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(tick);
+  }
+
+  playBtn.addEventListener('click', play);
+  progressTrack.addEventListener('click', play);
+  window.addEventListener('load', ()=>{ setTimeout(play,300); });
+})();
+</script>
+
+</body>
+</html>
