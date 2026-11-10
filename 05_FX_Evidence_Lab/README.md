@@ -19,7 +19,13 @@ execution code, and makes no performance claim.** Live trading is deliberately o
 Live prices, calendar/news, H1/H4 context, broker or MT5 adapters, backtesting, walk-forward and deflated-Sharpe analysis,
 forward test, multi-user backend, UI, XAUUSD. No API is connected. No backtest has been run; **no edge is demonstrated.**
 
-## Use
+## Daily use (research desk)
+```bash
+npm start   # http://localhost:8787 (localhost only)
+```
+In MT5 export M15 bars (View > Symbols > Bars), load the file, enter your broker's server UTC offset and equity, press Scan. You get a state, plan card and position size. You place any order yourself. Journal is stored in the browser only.
+
+## CLI
 ```bash
 npm test
 node src/cli.js EURUSD candles.csv 2026-11-06T12:00:00Z 10000
