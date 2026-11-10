@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { oandaFromEnv, liveAnalysis } from './brokers/oanda.js';
+import { twelveDataFromEnv } from './brokers/twelvedata.js';
 import { evaluate } from './strategy.js';
 import { INSTRUMENTS } from './data.js';
 
@@ -11,7 +12,7 @@ const root = join(fileURLToPath(import.meta.url), '..', '..');
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css' };
 const port = Number(process.env.PORT) || 8787;
 
-const adapter = oandaFromEnv();
+const adapter = oandaFromEnv() || twelveDataFromEnv();
 const cache = new Map();
 
 createServer(async (req, res) => {
@@ -20,7 +21,7 @@ createServer(async (req, res) => {
     res.setHeader('content-type', 'application/json');
     const pair = url0.searchParams.get('pair');
     if (!INSTRUMENTS[pair]) { res.writeHead(400); return res.end('{"error":"unsupported pair"}'); }
-    if (!adapter) { res.writeHead(200); return res.end(JSON.stringify({ state: 'DATA_BLOCKED', instrument: pair, reasons: ['live feed not configured: set OANDA_TOKEN and OANDA_ACCOUNT_ID on the server'] })); }
+    if (!adapter) { res.writeHead(200); return res.end(JSON.stringify({ state: 'DATA_BLOCKED', instrument: pair, reasons: ['live feed not configured: set OANDA_TOKEN + OANDA_ACCOUNT_ID, or TWELVE_DATA_API_KEY, on the server'] })); }
     const hit = cache.get(pair);
     if (hit && Date.now() - hit.at < 5000) { res.writeHead(200); return res.end(hit.body); }
     let body;

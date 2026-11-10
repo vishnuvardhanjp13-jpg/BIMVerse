@@ -35,6 +35,12 @@ export function oandaFromEnv(env = process.env, fetchImpl = fetch) {
 
 /** Live analysis: evaluates the frozen rule with the LIVE spread as cost and validates the quote. */
 export async function liveAnalysis(adapter, pair, evaluate, now = new Date()) {
+  if (adapter.hasQuote === false) {
+    // Candle-only feed (no bid/ask): spread is an assumption and says so.
+    const candles = await adapter.candles(pair);
+    const r = evaluate(candles, now, { instrument: pair, feed: adapter.name, costs: { spread: adapter.assumedSpread, slippage: 0.00005, commission: 0 } });
+    return { feed: adapter.name, quote: null, assumedSpread: adapter.assumedSpread, ...r, reasons: [...(r.reasons || []), 'no live bid/ask on this feed: spread is assumed, verify on your broker'] };
+  }
   const [candles, q] = await Promise.all([adapter.candles(pair), adapter.quote(pair)]);
   const issues = validateQuote(q, now);
   const spread = q.ask - q.bid;

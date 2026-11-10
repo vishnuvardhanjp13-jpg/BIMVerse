@@ -108,6 +108,7 @@ async function poll() {
       const r = await (await fetch('/api/analysis?pair=' + pair)).json();
       const q = r.quote;
       html += `<div style="margin-bottom:10px"><b>${pair}</b> <span class="state ${r.state}">${r.state}</span>`;
+      if (!q && r.assumedSpread) html += ` <span class="note">candle feed only, assumed spread ${(r.assumedSpread / 0.0001).toFixed(1)} pips, feed ${esc(r.feed)}</span>`;
       if (q) html += ` <span class="note">bid ${q.bid} / ask ${q.ask}, spread ${(q.spread / 0.0001).toFixed(1)} pips, quote age ${(q.ageMs / 1000).toFixed(0)}s, feed ${esc(r.feed)}</span>`;
       html += `<br>${(r.reasons || []).map(esc).join('<br>')}`;
       if (r.state === 'CONDITIONAL') {

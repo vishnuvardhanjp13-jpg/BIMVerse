@@ -36,6 +36,14 @@ npm start
 The page then shows EURUSD/AUDUSD live status every 10 s from completed M15 bars and the live bid/ask spread.
 Verified only against mocked responses; not yet tested against the real OANDA service. Availability depends on your OANDA entity.
 
+### Twelve Data (free key) instead of OANDA
+```bash
+export TWELVE_DATA_API_KEY=...
+export ASSUMED_SPREAD=0.00012   # optional, price units; set to your broker's typical spread
+npm start
+```
+Candles only: there is no bid/ask, so the spread is assumed and labelled so. Candles are re-fetched once per new M15 bar to stay inside free-plan limits. Check Twelve Data's terms for your use. Mocked-response tests only; not yet run against the real service.
+
 ## CLI
 ```bash
 npm test
