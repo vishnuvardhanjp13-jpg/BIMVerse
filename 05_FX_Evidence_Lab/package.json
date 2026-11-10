@@ -1,0 +1,12 @@
+{
+  "name": "fx-evidence-lab",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Research-only forex decision-support workbench. No execution, no live-trading connection.",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "scan": "node src/cli.js"
+  },
+  "engines": { "node": ">=20" }
+}
