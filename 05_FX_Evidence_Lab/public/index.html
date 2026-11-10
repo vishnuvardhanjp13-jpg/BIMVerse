@@ -24,6 +24,12 @@ table{width:100%;border-collapse:collapse}td,th{padding:4px 6px;border-bottom:1p
 <h1>FX Evidence Lab</h1>
 <p class="sub">Research desk. No orders are placed. The strategy has no demonstrated edge; do not risk money you need.</p>
 
+<div class="card" id="live">
+  <h2 style="font-size:16px;margin:0 0 8px">Live analysis <span class="note" id="liveclock"></span></h2>
+  <div id="livebody" class="note">Connecting...</div>
+  <p class="note">Read-only feed, refreshes every 10 s. Bars used are completed M15 bars only. Needs OANDA_TOKEN and OANDA_ACCOUNT_ID set on the server (practice account by default).</p>
+</div>
+
 <div class="card">
   <div class="grid">
     <div><label>Pair</label><select id="pair"><option>EURUSD</option><option>AUDUSD</option></select></div>
@@ -92,6 +98,32 @@ $('run').onclick = () => {
     out.innerHTML = h;
   } catch (e) { out.innerHTML = `<div class="state DATA_BLOCKED">ERROR</div><p>${e.message}</p>`; }
 };
+
+const lastState = {};
+const esc = (s) => String(s).replace(/[<>&]/g, '');
+async function poll() {
+  let html = '';
+  for (const pair of ['EURUSD', 'AUDUSD']) {
+    try {
+      const r = await (await fetch('/api/analysis?pair=' + pair)).json();
+      const q = r.quote;
+      html += `<div style="margin-bottom:10px"><b>${pair}</b> <span class="state ${r.state}">${r.state}</span>`;
+      if (q) html += ` <span class="note">bid ${q.bid} / ask ${q.ask}, spread ${(q.spread / 0.0001).toFixed(1)} pips, quote age ${(q.ageMs / 1000).toFixed(0)}s, feed ${esc(r.feed)}</span>`;
+      html += `<br>${(r.reasons || []).map(esc).join('<br>')}`;
+      if (r.state === 'CONDITIONAL') {
+        const s = sizePosition({ equity: +$('eq').value, entry: r.entry, stop: r.stop, spec: INSTRUMENTS[pair], openRiskPct: +$('open').value, costPerUnit: r.costs.spread + r.costs.slippage });
+        html += `<br>${r.side} stop-entry ${fmt(r.entry)}, stop ${fmt(r.stop)}, target ${fmt(r.target)}, net R:R ${r.netRR.toFixed(2)}, expires ${r.expiresAt.slice(11, 16)}Z, size ${s.ok ? s.units + ' units' : 'NO TRADE (' + s.reasons.join(', ') + ')'}<br><span class="note">Event risk UNKNOWN: check the calendar. Re-check the price before acting.</span>`;
+        if (lastState[pair] !== 'CONDITIONAL' && 'Notification' in window && Notification.permission === 'granted') new Notification(`${pair}: conditional setup`);
+      }
+      lastState[pair] = r.state;
+      html += '</div>';
+    } catch (e) { html += `<div><b>${pair}</b> <span class="state DATA_BLOCKED">DATA_BLOCKED</span> server unreachable</div>`; }
+  }
+  $('livebody').innerHTML = html;
+  $('liveclock').textContent = 'updated ' + new Date().toLocaleTimeString();
+}
+if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+poll(); setInterval(poll, 10000);
 
 const KEY = 'fxlab-journal';
 const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } };

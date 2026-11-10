@@ -25,6 +25,17 @@ npm start   # http://localhost:8787 (localhost only)
 ```
 In MT5 export M15 bars (View > Symbols > Bars), load the file, enter your broker's server UTC offset and equity, press Scan. You get a state, plan card and position size. You place any order yourself. Journal is stored in the browser only.
 
+## Live analysis (read-only)
+Set credentials in your own terminal (never paste them in chat or commit them):
+```bash
+export OANDA_TOKEN=...        # practice-account API token
+export OANDA_ACCOUNT_ID=...
+export OANDA_ENV=practice     # default; 'live' only for a live account's read-only data
+npm start
+```
+The page then shows EURUSD/AUDUSD live status every 10 s from completed M15 bars and the live bid/ask spread.
+Verified only against mocked responses; not yet tested against the real OANDA service. Availability depends on your OANDA entity.
+
 ## CLI
 ```bash
 npm test
