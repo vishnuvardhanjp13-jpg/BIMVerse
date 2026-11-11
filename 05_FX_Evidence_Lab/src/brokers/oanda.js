@@ -25,6 +25,14 @@ export function oandaFromEnv(env = process.env, fetchImpl = fetch) {
         open: +c.mid.o, high: +c.mid.h, low: +c.mid.l, close: +c.mid.c,
       }));
     },
+    /** All recent M15 candles including the still-forming one (chart only; strategy filters to completed bars). */
+    async chartCandles(pair, count = 200) {
+      const j = await get(`/v3/instruments/${toOandaInstrument(pair)}/candles?granularity=M15&count=${count}&price=M`);
+      return j.candles.map((c) => ({
+        openTime: ms(c.time), closeTime: ms(c.time) + M15_MS,
+        open: +c.mid.o, high: +c.mid.h, low: +c.mid.l, close: +c.mid.c,
+      }));
+    },
     async quote(pair) {
       const j = await get(`/v3/accounts/${env.OANDA_ACCOUNT_ID}/pricing?instruments=${toOandaInstrument(pair)}`);
       const p = j.prices[0];
@@ -37,15 +45,21 @@ export function oandaFromEnv(env = process.env, fetchImpl = fetch) {
 export async function liveAnalysis(adapter, pair, evaluate, now = new Date()) {
   if (adapter.hasQuote === false) {
     // Candle-only feed (no bid/ask): spread is an assumption and says so.
-    const candles = await adapter.candles(pair);
+    const candles = await (adapter.chartCandles || adapter.candles).call(adapter, pair);
     const r = evaluate(candles, now, { instrument: pair, feed: adapter.name, costs: { spread: adapter.assumedSpread, slippage: 0.00005, commission: 0 } });
-    return { feed: adapter.name, quote: null, assumedSpread: adapter.assumedSpread, ...r, reasons: [...(r.reasons || []), 'no live bid/ask on this feed: spread is assumed, verify on your broker'] };
+    return { feed: adapter.name, quote: null, assumedSpread: adapter.assumedSpread, chart: chartOf(candles, now), ...r, reasons: [...(r.reasons || []), 'no live bid/ask on this feed: spread is assumed, verify on your broker'] };
   }
-  const [candles, q] = await Promise.all([adapter.candles(pair), adapter.quote(pair)]);
+  const [candles, q] = await Promise.all([(adapter.chartCandles || adapter.candles).call(adapter, pair), adapter.quote(pair)]);
   const issues = validateQuote(q, now);
   const spread = q.ask - q.bid;
-  const base = { feed: adapter.name, quote: { ...q, spread, ageMs: now.getTime() - q.sourceTime }, quoteIssues: issues };
+  const base = { feed: adapter.name, chart: chartOf(candles, now), quote: { ...q, spread, ageMs: now.getTime() - q.sourceTime }, quoteIssues: issues };
   if (issues.length) return { ...base, instrument: pair, state: 'DATA_BLOCKED', reasons: ['quote check failed: ' + issues.join(', ')] };
   const r = evaluate(candles, now, { instrument: pair, feed: adapter.name, costs: { spread, slippage: 0.00005, commission: 0 } });
   return { ...base, ...r };
+}
+
+/** Compact chart payload: last 64 bars, forming bar flagged. */
+export function chartOf(candles, now, n = 64) {
+  const t = now.getTime();
+  return candles.slice(-n).map((c) => ({ t: c.openTime, o: c.open, h: c.high, l: c.low, c: c.close, forming: c.closeTime > t }));
 }

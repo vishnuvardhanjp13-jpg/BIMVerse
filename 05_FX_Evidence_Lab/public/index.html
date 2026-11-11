@@ -99,7 +99,33 @@ $('run').onclick = () => {
   } catch (e) { out.innerHTML = `<div class="state DATA_BLOCKED">ERROR</div><p>${e.message}</p>`; }
 };
 
-const lastState = {};
+const lastState = {}, charts = {};
+function drawChart(cv, r) {
+  if (!cv || !r.chart || !r.chart.length) return;
+  const css = getComputedStyle(document.documentElement), col = (v) => css.getPropertyValue(v).trim();
+  const dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
+  cv.width = W * dpr; cv.height = H * dpr;
+  const g = cv.getContext('2d'); g.scale(dpr, dpr);
+  const bars = r.chart, q = r.quote;
+  const lv = r.state === 'CONDITIONAL' ? [r.entry, r.stop, r.target] : [];
+  const vals = bars.flatMap((b) => [b.h, b.l]).concat(lv, q ? [q.bid, q.ask] : []);
+  let hi = Math.max(...vals), lo = Math.min(...vals); const pad = (hi - lo) * 0.06 || 0.0005; hi += pad; lo -= pad;
+  const L = 6, R = 62, T = 6, B = 18, pw = W - L - R, ph = H - T - B;
+  const y = (p) => T + (hi - p) / (hi - lo) * ph, bw = pw / bars.length;
+  g.font = '11px system-ui'; g.fillStyle = col('--mut'); g.strokeStyle = col('--line'); g.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) { const p = lo + (hi - lo) * i / 4, yy = y(p); g.beginPath(); g.moveTo(L, yy); g.lineTo(W - R, yy); g.stroke(); g.fillText(p.toFixed(5), W - R + 4, yy + 4); }
+  bars.forEach((b, i) => {
+    const x = L + i * bw + bw / 2, up = b.c >= b.o, c = up ? col('--ok') : col('--bad');
+    g.strokeStyle = c; g.fillStyle = c; g.globalAlpha = b.forming ? 0.55 : 1;
+    g.beginPath(); g.moveTo(x, y(b.h)); g.lineTo(x, y(b.l)); g.stroke();
+    const top = y(Math.max(b.o, b.c)), h = Math.max(1, Math.abs(y(b.o) - y(b.c)));
+    g.fillRect(x - bw * 0.35, top, bw * 0.7, h); g.globalAlpha = 1;
+  });
+  const line = (p, label, c, dash) => { g.strokeStyle = c; g.fillStyle = c; g.setLineDash(dash); g.beginPath(); g.moveTo(L, y(p)); g.lineTo(W - R, y(p)); g.stroke(); g.setLineDash([]); g.fillText(label, L + 4, y(p) - 3); };
+  if (r.state === 'CONDITIONAL') { line(r.entry, 'entry', col('--fg'), [4, 3]); line(r.stop, 'stop', col('--bad'), [4, 3]); line(r.target, 'target', col('--ok'), [4, 3]); }
+  if (q) { line(q.bid, 'bid', col('--mut'), [2, 3]); line(q.ask, 'ask', col('--mut'), [2, 3]); }
+  g.fillStyle = col('--mut'); g.fillText(new Date(bars[0].t).toISOString().slice(5, 16) + 'Z  ->  ' + new Date(bars[bars.length - 1].t).toISOString().slice(5, 16) + 'Z  (faded = forming candle, M15)', L, H - 4);
+}
 const esc = (s) => String(s).replace(/[<>&]/g, '');
 async function poll() {
   let html = '';
@@ -110,7 +136,7 @@ async function poll() {
       html += `<div style="margin-bottom:10px"><b>${pair}</b> <span class="state ${r.state}">${r.state}</span>`;
       if (!q && r.assumedSpread) html += ` <span class="note">candle feed only, assumed spread ${(r.assumedSpread / 0.0001).toFixed(1)} pips, feed ${esc(r.feed)}</span>`;
       if (q) html += ` <span class="note">bid ${q.bid} / ask ${q.ask}, spread ${(q.spread / 0.0001).toFixed(1)} pips, quote age ${(q.ageMs / 1000).toFixed(0)}s, feed ${esc(r.feed)}</span>`;
-      html += `<br>${(r.reasons || []).map(esc).join('<br>')}`;
+      html += `<br>${(r.reasons || []).map(esc).join('<br>')}<br><canvas id="ch-${pair}" style="width:100%;height:260px;margin-top:6px"></canvas>`;
       if (r.state === 'CONDITIONAL') {
         const s = sizePosition({ equity: +$('eq').value, entry: r.entry, stop: r.stop, spec: INSTRUMENTS[pair], openRiskPct: +$('open').value, costPerUnit: r.costs.spread + r.costs.slippage });
         html += `<br>${r.side} stop-entry ${fmt(r.entry)}, stop ${fmt(r.stop)}, target ${fmt(r.target)}, net R:R ${r.netRR.toFixed(2)}, expires ${r.expiresAt.slice(11, 16)}Z, size ${s.ok ? s.units + ' units' : 'NO TRADE (' + s.reasons.join(', ') + ')'}<br><span class="note">Event risk UNKNOWN: check the calendar. Re-check the price before acting.</span>`;
@@ -118,9 +144,11 @@ async function poll() {
       }
       lastState[pair] = r.state;
       html += '</div>';
+      charts[pair] = r;
     } catch (e) { html += `<div><b>${pair}</b> <span class="state DATA_BLOCKED">DATA_BLOCKED</span> server unreachable</div>`; }
   }
   $('livebody').innerHTML = html;
+  for (const pair of Object.keys(charts)) drawChart($('ch-' + pair), charts[pair]);
   $('liveclock').textContent = 'updated ' + new Date().toLocaleTimeString();
 }
 if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();

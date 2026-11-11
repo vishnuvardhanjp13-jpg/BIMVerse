@@ -21,7 +21,7 @@ test('not configured without env vars; practice by default; no order methods', (
   assert.equal(oandaFromEnv({}), null);
   const a = oandaFromEnv(env, mockFetch({}));
   assert.equal(a.name, 'oanda-practice');
-  assert.deepEqual(Object.keys(a).sort(), ['candles', 'name', 'quote']);
+  assert.deepEqual(Object.keys(a).sort(), ['candles', 'chartCandles', 'name', 'quote']);
   assert.equal(toOandaInstrument('EURUSD'), 'EUR_USD');
 });
 
