@@ -58,8 +58,8 @@ export async function liveAnalysis(adapter, pair, evaluate, now = new Date()) {
   return { ...base, ...r };
 }
 
-/** Compact chart payload: last 64 bars, forming bar flagged. */
-export function chartOf(candles, now, n = 64) {
+/** Compact chart payload: last 150 bars, forming bar flagged. */
+export function chartOf(candles, now, n = 150) {
   const t = now.getTime();
   return candles.slice(-n).map((c) => ({ t: c.openTime, o: c.open, h: c.high, l: c.low, c: c.close, forming: c.closeTime > t }));
 }

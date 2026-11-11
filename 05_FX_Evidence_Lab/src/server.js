@@ -32,6 +32,7 @@ createServer(async (req, res) => {
   }
   let p =normalize(decodeURIComponent(new URL(req.url, 'http://x').pathname));
   if (p === '/' || p === '\\') p = '/public/index.html';
+  if (p.startsWith('/vendor/')) p = '/public' + p;
   if (!/^[\\/](public|src)[\\/]/.test(p) || p.includes('..')) { res.writeHead(404); return res.end('not found'); }
   try {
     const body = await readFile(join(root, p));

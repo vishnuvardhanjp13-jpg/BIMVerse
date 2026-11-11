@@ -33,7 +33,7 @@ export OANDA_ACCOUNT_ID=...
 export OANDA_ENV=practice     # default; 'live' only for a live account's read-only data
 npm start
 ```
-The page then shows EURUSD/AUDUSD live status every 10 s from completed M15 bars and the live bid/ask spread.
+The page (TradingView-style layout, using TradingView Lightweight Charts, Apache-2.0, vendored in public/vendor) shows a live candlestick chart and EURUSD/AUDUSD status every 10 s from completed M15 bars and the live bid/ask spread.
 Verified only against mocked responses; not yet tested against the real OANDA service. Availability depends on your OANDA entity.
 
 ### Twelve Data (free key) instead of OANDA

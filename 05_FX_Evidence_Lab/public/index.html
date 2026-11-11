@@ -5,61 +5,110 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FX Evidence Lab</title>
 <style>
-:root{--bg:#f6f7f9;--fg:#15181d;--card:#fff;--mut:#5b6572;--line:#d9dee5;--ok:#0b7a43;--warn:#9a5b00;--bad:#b3261e}
-@media(prefers-color-scheme:dark){:root{--bg:#101318;--fg:#e8ebf0;--card:#181c23;--mut:#9aa5b4;--line:#2a313c;--ok:#4cc38a;--warn:#e0a53a;--bad:#ff7b72}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,sans-serif}
-main{max-width:860px;margin:0 auto;padding:16px}
-h1{font-size:20px;margin:0 0 4px}.sub{color:var(--mut);margin:0 0 16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-label{display:block;font-size:12px;color:var(--mut)}input,select,button,textarea{width:100%;font:inherit;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
-button{cursor:pointer;background:var(--fg);color:var(--bg);border:0;font-weight:600}button.sec{background:transparent;color:var(--fg);border:1px solid var(--line)}
-.state{font-weight:700}.CONDITIONAL{color:var(--ok)}.WAIT{color:var(--warn)}.DATA_BLOCKED{color:var(--bad)}
-table{width:100%;border-collapse:collapse}td,th{padding:4px 6px;border-bottom:1px solid var(--line);text-align:left}
-.note{color:var(--mut);font-size:13px}
+:root{--bg:#131722;--panel:#1e222d;--line:#2a2e39;--fg:#d1d4dc;--mut:#787b86;--up:#26a69a;--down:#ef5350;--accent:#2962ff;--warn:#f5a623}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:13px/1.45 -apple-system,"Trebuchet MS",Roboto,system-ui,sans-serif;display:flex;flex-direction:column}
+header{height:44px;flex:none;display:flex;align-items:center;gap:14px;padding:0 12px;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap}
+.brand{font-weight:700;letter-spacing:.2px}
+.tabs{display:flex;gap:4px}
+.tab{background:transparent;border:0;color:var(--mut);padding:6px 10px;border-radius:4px;cursor:pointer;font:inherit;font-weight:600}
+.btabs .tab{width:auto}
+.tab:hover{background:var(--line);color:var(--fg)}.tab.on{background:var(--line);color:var(--fg)}
+.tf{color:var(--fg);font-weight:600;border-left:1px solid var(--line);padding-left:14px}
+.pill{padding:2px 8px;border-radius:10px;font-weight:700;font-size:11px;background:var(--line)}
+.CONDITIONAL{color:var(--up)}.WAIT{color:var(--warn)}.DATA_BLOCKED{color:var(--down)}
+.mut{color:var(--mut)}
+.sp{flex:1}
+.banner{flex:none;background:#2b2411;color:#f5c26b;padding:4px 12px;font-size:12px;border-bottom:1px solid var(--line)}
+.wrap{flex:1;min-height:0;display:flex}
+.chartcol{flex:1;min-width:0;display:flex;flex-direction:column}
+.chartbox{position:relative;flex:1;min-height:300px}
+#chart{position:absolute;inset:0}
+#legend{position:absolute;left:10px;top:8px;z-index:3;font-size:12px;pointer-events:none;text-shadow:0 0 4px var(--bg)}
+#overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:4;background:rgba(19,23,34,.82);text-align:center;padding:20px}
+aside{width:320px;flex:none;border-left:1px solid var(--line);background:var(--panel);overflow-y:auto}
+.sec{padding:10px 12px;border-bottom:1px solid var(--line)}
+.sec h3{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--mut)}
+.wl{display:flex;justify-content:space-between;align-items:center;padding:7px 8px;border-radius:4px;cursor:pointer}
+.wl:hover,.wl.on{background:var(--line)}
+table{width:100%;border-collapse:collapse}td,th{padding:3px 0;text-align:left;vertical-align:top}th{color:var(--mut);font-weight:400;width:42%}
+label{display:block;font-size:11px;color:var(--mut);margin-bottom:2px}
+input,select,button{width:100%;font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:4px;background:var(--bg);color:var(--fg)}
+button.pri{background:var(--accent);border:0;font-weight:600;cursor:pointer;color:#fff}
+button.sec2{cursor:pointer}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bottom{flex:none;height:210px;border-top:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column}
+.btabs{display:flex;gap:2px;padding:4px 8px;border-bottom:1px solid var(--line)}
+.bbody{flex:1;overflow:auto;padding:10px 12px}
+.note{color:var(--mut);font-size:12px}
+.journal td,.journal th{padding:3px 10px 3px 0;width:auto}
+@media(max-width:900px){.wrap{flex-direction:column;overflow-y:auto}aside{width:100%;border-left:0}.chartcol{min-height:420px;flex:none}.bottom{height:auto}}
 </style>
 </head>
 <body>
-<main>
-<h1>FX Evidence Lab</h1>
-<p class="sub">Research desk. No orders are placed. The strategy has no demonstrated edge; do not risk money you need.</p>
+<header>
+  <span class="brand">FX Evidence Lab</span>
+  <div class="tabs" id="tabs"></div>
+  <span class="tf">15m</span>
+  <span id="hstate" class="pill">...</span>
+  <span id="hfeed" class="mut"></span>
+  <span class="sp"></span>
+  <span id="clock" class="mut"></span>
+</header>
+<div class="banner">Research tool. No orders are placed here. The strategy has no demonstrated edge. Event risk is not checked: use the economic calendar.</div>
 
-<div class="card" id="live">
-  <h2 style="font-size:16px;margin:0 0 8px">Live analysis <span class="note" id="liveclock"></span></h2>
-  <div id="livebody" class="note">Connecting...</div>
-  <p class="note">Read-only feed, refreshes every 10 s. Bars used are completed M15 bars only. Needs OANDA_TOKEN and OANDA_ACCOUNT_ID set on the server (practice account by default).</p>
-</div>
-
-<div class="card">
-  <div class="grid">
-    <div><label>Pair</label><select id="pair"><option>EURUSD</option><option>AUDUSD</option></select></div>
-    <div><label>MT5 export (M15 bars)</label><input type="file" id="file" accept=".csv,.txt"></div>
-    <div><label>Broker server UTC offset (hours)</label><input id="off" type="number" step="0.5" placeholder="e.g. 3"></div>
-    <div><label>Account equity (USD)</label><input id="eq" type="number" value="1000"></div>
-    <div><label>Spread (price units)</label><input id="spread" type="number" step="0.00001" value="0.00012"></div>
-    <div><label>Slippage (price units)</label><input id="slip" type="number" step="0.00001" value="0.00005"></div>
-    <div><label>Open risk already used (% of equity)</label><input id="open" type="number" step="0.05" value="0"></div>
-    <div><label>&nbsp;</label><button id="run">Scan</button></div>
+<div class="wrap">
+  <div class="chartcol">
+    <div class="chartbox">
+      <div id="chart"></div>
+      <div id="legend"></div>
+      <div id="overlay"></div>
+    </div>
   </div>
-  <p class="note">In MT5: View &rarr; Symbols &rarr; Bars &rarr; M15 &rarr; Export bars. Use bars only up to now; unfinished bars are ignored. The UTC offset is your broker's server time; a wrong value gives wrong results.</p>
+  <aside>
+    <div class="sec"><h3>Watchlist</h3><div id="wl"></div></div>
+    <div class="sec"><h3>Plan</h3><div id="plan" class="note">Waiting for data...</div></div>
+    <div class="sec">
+      <h3>Position sizing</h3>
+      <div class="grid2">
+        <div><label>Equity (USD)</label><input id="eq" type="number" value="1000"></div>
+        <div><label>Open risk used (%)</label><input id="open" type="number" step="0.05" value="0"></div>
+      </div>
+      <p class="note">Risk per trade 0.25%, combined 0.5%.</p>
+    </div>
+    <div class="sec note">Charts by <a style="color:var(--accent)" href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView</a> Lightweight Charts&trade; (Apache-2.0). Times are UTC.</div>
+  </aside>
 </div>
 
-<div class="card" id="out" hidden></div>
-
-<div class="card">
-  <h2 style="font-size:16px;margin:0 0 8px">Paper / manual journal</h2>
-  <div class="grid">
-    <div><label>Note</label><input id="jn" placeholder="what happened"></div>
-    <div><label>Outcome (net R, e.g. -1 or 1.6)</label><input id="jr" type="number" step="0.1"></div>
-    <div><label>Type</label><select id="jt"><option>paper</option><option>real</option></select></div>
-    <div><label>&nbsp;</label><button id="jadd" class="sec">Add entry</button></div>
+<div class="bottom">
+  <div class="btabs"><button class="tab on" data-b="journal">Journal</button><button class="tab" data-b="scan">Scan MT5 file</button></div>
+  <div class="bbody" id="b-journal">
+    <div class="grid2" style="grid-template-columns:2fr 1fr 1fr auto;max-width:760px">
+      <div><label>Note</label><input id="jn" placeholder="what happened"></div>
+      <div><label>Net R (e.g. -1, 1.6)</label><input id="jr" type="number" step="0.1"></div>
+      <div><label>Type</label><select id="jt"><option>paper</option><option>real</option></select></div>
+      <div><label>&nbsp;</label><button id="jadd" class="sec2">Add</button></div>
+    </div>
+    <table class="journal" id="jtab"></table>
+    <p id="jm" class="note"></p>
+    <button id="jx" class="sec2" style="width:auto">Export JSON</button>
+    <span class="note"> Stored only in this browser. Not an audited record.</span>
   </div>
-  <table id="jtab"></table>
-  <p id="jm" class="note"></p>
-  <button id="jx" class="sec">Export journal (JSON)</button>
-  <p class="note">Stored only in this browser. Not an audited record.</p>
+  <div class="bbody" id="b-scan" hidden>
+    <div class="grid2" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));max-width:900px">
+      <div><label>Pair</label><select id="pair"><option>EURUSD</option><option>AUDUSD</option></select></div>
+      <div><label>MT5 export (M15 bars)</label><input type="file" id="file" accept=".csv,.txt"></div>
+      <div><label>Broker server UTC offset (h)</label><input id="off" type="number" step="0.5" placeholder="e.g. 3"></div>
+      <div><label>Spread (price)</label><input id="spread" type="number" step="0.00001" value="0.00012"></div>
+      <div><label>Slippage (price)</label><input id="slip" type="number" step="0.00001" value="0.00005"></div>
+      <div><label>&nbsp;</label><button id="run" class="pri">Scan file</button></div>
+    </div>
+    <div id="out" style="margin-top:8px"></div>
+  </div>
 </div>
-</main>
+
+<script src="/vendor/lightweight-charts.js"></script>
 <script type="module">
 import { parseCandlesCsv, INSTRUMENTS } from '/src/data.js';
 import { evaluate } from '/src/strategy.js';
@@ -67,99 +116,143 @@ import { sizePosition } from '/src/risk.js';
 import { mt5ToCsv } from '/src/mt5.js';
 
 const $ = (id) => document.getElementById(id);
-const fmt = (x) => (typeof x === 'number' ? x.toFixed(5) : x);
+const esc = (s) => String(s).replace(/[<>&"]/g, '');
+const f5 = (x) => (typeof x === 'number' ? x.toFixed(5) : x);
+const PAIRS = ['EURUSD', 'AUDUSD'];
+let current = PAIRS[0];
+const data = {}, lastState = {}, fitted = {};
+
+/* ---------- chart ---------- */
+const chart = LightweightCharts.createChart($('chart'), {
+  autoSize: true,
+  layout: { background: { color: '#131722' }, textColor: '#d1d4dc', fontSize: 12 },
+  grid: { vertLines: { color: '#1f2430' }, horzLines: { color: '#1f2430' } },
+  crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+  rightPriceScale: { borderColor: '#2a2e39' },
+  timeScale: { borderColor: '#2a2e39', timeVisible: true, secondsVisible: false },
+});
+const series = chart.addCandlestickSeries({
+  upColor: '#26a69a', downColor: '#ef5350', borderUpColor: '#26a69a', borderDownColor: '#ef5350',
+  wickUpColor: '#26a69a', wickDownColor: '#ef5350', priceFormat: { type: 'price', precision: 5, minMove: 0.00001 },
+});
+let lines = [];
+const setLines = (r) => {
+  lines.forEach((l) => series.removePriceLine(l)); lines = [];
+  const add = (price, title, color, style) => lines.push(series.createPriceLine({ price, color, lineWidth: 1, lineStyle: style, axisLabelVisible: true, title }));
+  if (r.state === 'CONDITIONAL') { add(r.entry, 'entry', '#d1d4dc', 2); add(r.stop, 'stop', '#ef5350', 2); add(r.target, 'target', '#26a69a', 2); }
+  if (r.quote) { add(r.quote.bid, 'bid', '#787b86', 1); add(r.quote.ask, 'ask', '#787b86', 1); }
+};
+const legend = (b) => {
+  if (!b) return ($('legend').innerHTML = '');
+  const c = b.close >= b.open ? '#26a69a' : '#ef5350';
+  $('legend').innerHTML = `<b>${current}</b> <span class="mut">15m</span> &nbsp; <span style="color:${c}">O ${f5(b.open)} H ${f5(b.high)} L ${f5(b.low)} C ${f5(b.close)}</span>`;
+};
+chart.subscribeCrosshairMove((p) => {
+  const b = p.seriesData && p.seriesData.get(series);
+  if (b) legend(b); else { const bars = data[current] && data[current].chart; if (bars && bars.length) { const l = bars[bars.length - 1]; legend({ open: l.o, high: l.h, low: l.l, close: l.c }); } }
+});
+
+function drawChart() {
+  const r = data[current]; const ov = $('overlay');
+  if (!r || !r.chart || !r.chart.length) {
+    series.setData([]); setLines({ state: '' });
+    ov.style.display = 'flex';
+    ov.innerHTML = `<div><div class="pill DATA_BLOCKED" style="display:inline-block;margin-bottom:8px">NO LIVE DATA</div><div>${r ? (r.reasons || []).map(esc).join('<br>') : 'Connecting...'}</div></div>`;
+    legend(null); return;
+  }
+  ov.style.display = 'none';
+  series.setData(r.chart.map((b) => {
+    const base = { time: Math.floor(b.t / 1000), open: b.o, high: b.h, low: b.l, close: b.c };
+    return b.forming ? { ...base, color: b.c >= b.o ? 'rgba(38,166,154,.45)' : 'rgba(239,83,80,.45)', borderColor: b.c >= b.o ? '#26a69a' : '#ef5350', wickColor: b.c >= b.o ? '#26a69a' : '#ef5350' } : base;
+  }));
+  setLines(r);
+  if (!fitted[current]) { chart.timeScale().fitContent(); chart.timeScale().applyOptions({ rightOffset: 6 }); fitted[current] = true; }
+  const l = r.chart[r.chart.length - 1]; legend({ open: l.o, high: l.h, low: l.l, close: l.c });
+}
+
+/* ---------- panels ---------- */
+function drawTabs() {
+  $('tabs').innerHTML = PAIRS.map((p) => `<button class="tab ${p === current ? 'on' : ''}" data-p="${p}">${p}</button>`).join('');
+  $('tabs').querySelectorAll('button').forEach((b) => (b.onclick = () => { current = b.dataset.p; render(); }));
+}
+function drawWatch() {
+  $('wl').innerHTML = PAIRS.map((p) => {
+    const r = data[p]; const last = r && r.chart && r.chart.length ? r.chart[r.chart.length - 1].c : null;
+    return `<div class="wl ${p === current ? 'on' : ''}" data-p="${p}"><span><b>${p}</b><br><span class="mut">${r && r.quote ? 'spread ' + (r.quote.spread / 0.0001).toFixed(1) + ' pips' : 'candle feed'}</span></span><span style="text-align:right">${last ? f5(last) : '-'}<br><span class="pill ${r ? r.state : ''}">${r ? r.state : '...'}</span></span></div>`;
+  }).join('');
+  $('wl').querySelectorAll('.wl').forEach((el) => (el.onclick = () => { current = el.dataset.p; render(); }));
+}
+function drawPlan() {
+  const r = data[current]; const el = $('plan');
+  if (!r) return (el.textContent = 'Waiting for data...');
+  let h = `<div class="pill ${r.state}" style="display:inline-block">${r.state}</div><p>${(r.reasons || []).map(esc).join('<br>')}</p>`;
+  if (r.state === 'CONDITIONAL') {
+    const s = sizePosition({ equity: +$('eq').value, entry: r.entry, stop: r.stop, spec: INSTRUMENTS[current], openRiskPct: +$('open').value, costPerUnit: r.costs.spread + r.costs.slippage });
+    h += `<table><tr><th>Side</th><td style="color:${r.side === 'long' ? '#26a69a' : '#ef5350'}">${r.side} (stop-entry, you place it)</td></tr>
+    <tr><th>Entry</th><td>${f5(r.entry)}</td></tr><tr><th>Stop</th><td>${f5(r.stop)}</td></tr>
+    <tr><th>Target</th><td>${f5(r.target)}<br><span class="mut">${esc(r.targetLogic)}</span></td></tr>
+    <tr><th>Net R:R</th><td>${r.netRR.toFixed(2)}</td></tr>
+    <tr><th>Size</th><td>${s.ok ? s.units + ' units, risk ' + s.riskPct.toFixed(2) + '%' : 'NO TRADE: ' + esc(s.reasons.join(', '))}</td></tr>
+    <tr><th>Cancel</th><td>${esc(r.cancelIf)}; expires ${r.expiresAt.slice(11, 16)}Z</td></tr>
+    <tr><th>Data cutoff</th><td>${r.dataCutoff.slice(11, 16)}Z</td></tr>
+    <tr><th>Against</th><td>${r.opposingEvidence.map(esc).join('; ')}</td></tr></table>
+    <p class="note">Event risk UNKNOWN. Re-check price on your broker before acting.</p>`;
+  }
+  el.innerHTML = h;
+}
+function drawHeader() {
+  const r = data[current];
+  $('hstate').className = 'pill ' + (r ? r.state : ''); $('hstate').textContent = r ? r.state : '...';
+  $('hfeed').textContent = r ? (r.quote ? `${r.feed} · quote age ${(r.quote.ageMs / 1000).toFixed(0)}s` : `${r.feed || 'no feed'} · assumed spread`) : '';
+}
+function render() { drawTabs(); drawWatch(); drawPlan(); drawHeader(); drawChart(); }
+
+async function poll() {
+  for (const pair of PAIRS) {
+    try {
+      const r = await (await fetch('/api/analysis?pair=' + pair)).json();
+      data[pair] = r;
+      if (r.state === 'CONDITIONAL' && lastState[pair] !== 'CONDITIONAL' && 'Notification' in window && Notification.permission === 'granted') new Notification(`${pair}: conditional setup`);
+      lastState[pair] = r.state;
+    } catch { data[pair] = { state: 'DATA_BLOCKED', reasons: ['server unreachable'] }; }
+  }
+  $('clock').textContent = 'updated ' + new Date().toISOString().slice(11, 19) + ' UTC';
+  render();
+}
+$('eq').oninput = $('open').oninput = drawPlan;
+if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+render(); poll(); setInterval(poll, 10000);
+
+/* ---------- bottom tabs ---------- */
+document.querySelectorAll('.btabs .tab').forEach((t) => (t.onclick = () => {
+  document.querySelectorAll('.btabs .tab').forEach((x) => x.classList.toggle('on', x === t));
+  $('b-journal').hidden = t.dataset.b !== 'journal'; $('b-scan').hidden = t.dataset.b !== 'scan';
+}));
+
+/* ---------- manual MT5 file scan ---------- */
 let text = '';
 $('file').onchange = async (e) => { text = await e.target.files[0].text(); };
-
 $('run').onclick = () => {
-  const out = $('out'); out.hidden = false;
+  const out = $('out');
   try {
     if (!text) throw new Error('load an MT5 export first');
     const csv = /^time,/i.test(text) ? text : mt5ToCsv(text, Number($('off').value));
     const { candles, errors } = parseCandlesCsv(csv);
     const pair = $('pair').value;
     const r = evaluate(candles, new Date(), { instrument: pair, costs: { spread: +$('spread').value, slippage: +$('slip').value, commission: 0 } });
-    let h = `<div class="state ${r.state}">${r.state}</div>`;
-    h += `<p>${(r.reasons || []).join('<br>')}</p>`;
-    if (errors.length) h += `<p class="note">${errors.length} import line(s) rejected, e.g. ${errors[0]}</p>`;
-    if (r.state === 'CONDITIONAL') {
-      const s = sizePosition({ equity: +$('eq').value, entry: r.entry, stop: r.stop, spec: INSTRUMENTS[pair], openRiskPct: +$('open').value, costPerUnit: r.costs.spread + r.costs.slippage });
-      h += `<table><tr><th>Side</th><td>${r.side} (stop-entry order, set by you)</td></tr>
-      <tr><th>Entry trigger</th><td>${fmt(r.entry)}</td></tr><tr><th>Stop</th><td>${fmt(r.stop)}</td></tr>
-      <tr><th>Target</th><td>${fmt(r.target)} (${r.targetLogic})</td></tr>
-      <tr><th>Net reward/risk</th><td>${r.netRR.toFixed(2)}</td></tr>
-      <tr><th>Cancel if</th><td>${r.cancelIf}; expires ${r.expiresAt}</td></tr>
-      <tr><th>Size</th><td>${s.ok ? `${s.units} units, risk ${s.riskPct.toFixed(2)}% of equity` : 'NO TRADE: ' + s.reasons.join(', ')}</td></tr>
-      <tr><th>Data cutoff</th><td>${r.dataCutoff}</td></tr>
-      <tr><th>Event risk</th><td>${r.eventRestrictions}</td></tr>
-      <tr><th>Against</th><td>${r.opposingEvidence.join('; ')}</td></tr></table>
-      <p class="note">Check news/calendar yourself. Re-check the live price before acting.</p>`;
-    }
+    let h = `<span class="pill ${r.state}">${r.state}</span> ${(r.reasons || []).map(esc).join(' ')}`;
+    if (errors.length) h += `<br><span class="note">${errors.length} line(s) rejected, e.g. ${esc(errors[0])}</span>`;
+    if (r.state === 'CONDITIONAL') h += `<br>${r.side} entry ${f5(r.entry)} stop ${f5(r.stop)} target ${f5(r.target)} net R:R ${r.netRR.toFixed(2)}, expires ${r.expiresAt.slice(11, 16)}Z`;
     out.innerHTML = h;
-  } catch (e) { out.innerHTML = `<div class="state DATA_BLOCKED">ERROR</div><p>${e.message}</p>`; }
+  } catch (e) { out.innerHTML = `<span class="pill DATA_BLOCKED">ERROR</span> ${esc(e.message)}`; }
 };
 
-const lastState = {}, charts = {};
-function drawChart(cv, r) {
-  if (!cv || !r.chart || !r.chart.length) return;
-  const css = getComputedStyle(document.documentElement), col = (v) => css.getPropertyValue(v).trim();
-  const dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
-  cv.width = W * dpr; cv.height = H * dpr;
-  const g = cv.getContext('2d'); g.scale(dpr, dpr);
-  const bars = r.chart, q = r.quote;
-  const lv = r.state === 'CONDITIONAL' ? [r.entry, r.stop, r.target] : [];
-  const vals = bars.flatMap((b) => [b.h, b.l]).concat(lv, q ? [q.bid, q.ask] : []);
-  let hi = Math.max(...vals), lo = Math.min(...vals); const pad = (hi - lo) * 0.06 || 0.0005; hi += pad; lo -= pad;
-  const L = 6, R = 62, T = 6, B = 18, pw = W - L - R, ph = H - T - B;
-  const y = (p) => T + (hi - p) / (hi - lo) * ph, bw = pw / bars.length;
-  g.font = '11px system-ui'; g.fillStyle = col('--mut'); g.strokeStyle = col('--line'); g.lineWidth = 1;
-  for (let i = 0; i <= 4; i++) { const p = lo + (hi - lo) * i / 4, yy = y(p); g.beginPath(); g.moveTo(L, yy); g.lineTo(W - R, yy); g.stroke(); g.fillText(p.toFixed(5), W - R + 4, yy + 4); }
-  bars.forEach((b, i) => {
-    const x = L + i * bw + bw / 2, up = b.c >= b.o, c = up ? col('--ok') : col('--bad');
-    g.strokeStyle = c; g.fillStyle = c; g.globalAlpha = b.forming ? 0.55 : 1;
-    g.beginPath(); g.moveTo(x, y(b.h)); g.lineTo(x, y(b.l)); g.stroke();
-    const top = y(Math.max(b.o, b.c)), h = Math.max(1, Math.abs(y(b.o) - y(b.c)));
-    g.fillRect(x - bw * 0.35, top, bw * 0.7, h); g.globalAlpha = 1;
-  });
-  const line = (p, label, c, dash) => { g.strokeStyle = c; g.fillStyle = c; g.setLineDash(dash); g.beginPath(); g.moveTo(L, y(p)); g.lineTo(W - R, y(p)); g.stroke(); g.setLineDash([]); g.fillText(label, L + 4, y(p) - 3); };
-  if (r.state === 'CONDITIONAL') { line(r.entry, 'entry', col('--fg'), [4, 3]); line(r.stop, 'stop', col('--bad'), [4, 3]); line(r.target, 'target', col('--ok'), [4, 3]); }
-  if (q) { line(q.bid, 'bid', col('--mut'), [2, 3]); line(q.ask, 'ask', col('--mut'), [2, 3]); }
-  g.fillStyle = col('--mut'); g.fillText(new Date(bars[0].t).toISOString().slice(5, 16) + 'Z  ->  ' + new Date(bars[bars.length - 1].t).toISOString().slice(5, 16) + 'Z  (faded = forming candle, M15)', L, H - 4);
-}
-const esc = (s) => String(s).replace(/[<>&]/g, '');
-async function poll() {
-  let html = '';
-  for (const pair of ['EURUSD', 'AUDUSD']) {
-    try {
-      const r = await (await fetch('/api/analysis?pair=' + pair)).json();
-      const q = r.quote;
-      html += `<div style="margin-bottom:10px"><b>${pair}</b> <span class="state ${r.state}">${r.state}</span>`;
-      if (!q && r.assumedSpread) html += ` <span class="note">candle feed only, assumed spread ${(r.assumedSpread / 0.0001).toFixed(1)} pips, feed ${esc(r.feed)}</span>`;
-      if (q) html += ` <span class="note">bid ${q.bid} / ask ${q.ask}, spread ${(q.spread / 0.0001).toFixed(1)} pips, quote age ${(q.ageMs / 1000).toFixed(0)}s, feed ${esc(r.feed)}</span>`;
-      html += `<br>${(r.reasons || []).map(esc).join('<br>')}<br><canvas id="ch-${pair}" style="width:100%;height:260px;margin-top:6px"></canvas>`;
-      if (r.state === 'CONDITIONAL') {
-        const s = sizePosition({ equity: +$('eq').value, entry: r.entry, stop: r.stop, spec: INSTRUMENTS[pair], openRiskPct: +$('open').value, costPerUnit: r.costs.spread + r.costs.slippage });
-        html += `<br>${r.side} stop-entry ${fmt(r.entry)}, stop ${fmt(r.stop)}, target ${fmt(r.target)}, net R:R ${r.netRR.toFixed(2)}, expires ${r.expiresAt.slice(11, 16)}Z, size ${s.ok ? s.units + ' units' : 'NO TRADE (' + s.reasons.join(', ') + ')'}<br><span class="note">Event risk UNKNOWN: check the calendar. Re-check the price before acting.</span>`;
-        if (lastState[pair] !== 'CONDITIONAL' && 'Notification' in window && Notification.permission === 'granted') new Notification(`${pair}: conditional setup`);
-      }
-      lastState[pair] = r.state;
-      html += '</div>';
-      charts[pair] = r;
-    } catch (e) { html += `<div><b>${pair}</b> <span class="state DATA_BLOCKED">DATA_BLOCKED</span> server unreachable</div>`; }
-  }
-  $('livebody').innerHTML = html;
-  for (const pair of Object.keys(charts)) drawChart($('ch-' + pair), charts[pair]);
-  $('liveclock').textContent = 'updated ' + new Date().toLocaleTimeString();
-}
-if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
-poll(); setInterval(poll, 10000);
-
+/* ---------- journal ---------- */
 const KEY = 'fxlab-journal';
 const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } };
 const draw = () => {
   const j = load();
-  $('jtab').innerHTML = '<tr><th>Time</th><th>Type</th><th>Net R</th><th>Note</th></tr>' +
-    j.map((e) => `<tr><td>${e.at.slice(0, 16)}</td><td>${e.type}</td><td>${e.netR}</td><td></td></tr>`.replace('<td></td></tr>', `<td>${String(e.note).replace(/[<>&]/g, '')}</td></tr>`)).join('');
+  $('jtab').innerHTML = '<tr><th>Time</th><th>Type</th><th>Net R</th><th>Note</th></tr>' + j.slice().reverse().map((e) => `<tr><td>${esc(e.at.slice(0, 16))}</td><td>${esc(e.type)}</td><td>${esc(e.netR)}</td><td>${esc(e.note)}</td></tr>`).join('');
   const rs = j.map((e) => e.netR);
   $('jm').textContent = rs.length ? `${rs.length} entries, mean ${(rs.reduce((a, b) => a + b, 0) / rs.length).toFixed(2)} R. Too few trades to conclude anything.` : 'No entries.';
 };
